@@ -1,234 +1,167 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import plotly.express as px
-import plotly.graph_objects as go
+import matplotlib.pyplot as plt
+from mplsoccer import Pitch
 
-# --- 1. PREMIUM UI CUSTOM CONFIGURATION ---
-st.set_page_config(page_title="Qatar 2022 - Elite Analytics Hub", layout="wide")
+# --- 1. UI RESET & BLACK GRID ARCHITECTURE ---
+st.set_page_config(page_title="World Cup '22 Dashboard", layout="wide")
 
-# CSS Injection for Glassmorphism, Neon Accents, and Sleek Cards
 st.markdown("""
     <style>
-        /* Global Background and Typography */
         .stApp {
-            background: radial-gradient(circle at 50% 10%, #1a1c24 0%, #0d0e12 80%);
+            background: #0A0B0E;
             color: #E2E8F0;
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', sans-serif;
         }
-        
-        /* Modern Sidebar Styling */
         section[data-testid="stSidebar"] {
-            background-color: #090a0d !important;
-            border-right: 1px solid #1e222b;
+            background-color: #050608 !important;
+            border-right: 1px solid #1A1D24;
         }
-        
-        /* Top Navigation Custom Tab Bar */
         .stTabs [data-baseweb="tab"] {
-            color: #64748B !important;
-            font-size: 15px;
-            font-weight: 600;
-            padding: 12px 24px;
-            transition: all 0.3s ease;
+            color: #4A5568 !important;
+            font-size: 16px;
+            font-weight: 700;
+            padding: 14px 28px;
         }
         .stTabs [aria-selected="true"] {
             color: #38BDF8 !important;
-            border-bottom: 2px solid #38BDF8 !important;
+            border-bottom: 3px solid #38BDF8 !important;
         }
-        
-        /* Custom UI Dribbble-Style Cards */
-        .metric-card {
-            background: linear-gradient(135deg, #161920 0%, #111318 100%);
-            border: 1px solid #222733;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-            margin-bottom: 20px;
-            transition: transform 0.2s ease;
-        }
-        .metric-card:hover {
-            border-color: #38BDF8;
-            transform: translateY(-2px);
-        }
-        .metric-header {
-            color: #94A3B8;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-        .metric-value {
-            color: #FFFFFF;
-            font-size: 36px;
-            font-weight: 800;
-            font-family: 'Space Grotesk', sans-serif;
-        }
-        .metric-sub {
-            color: #38BDF8;
-            font-size: 13px;
-            margin-top: 4px;
-            font-weight: 500;
+        /* Custom Spatial Canvas Containers */
+        .pitch-container {
+            background: #111318;
+            border: 1px solid #1A1D24;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# --- 2. DATA EXTRACTION ENGINE ---
+# --- 2. DATA HYDRATION ENGINE ---
 @st.cache_data
-def load_advanced_data():
-    try:
-        teams = pd.read_csv('wc_team_advanced.csv')
-        players = pd.read_csv('wc_player_advanced.csv')
-    except FileNotFoundError:
-        teams = pd.DataFrame({
-            'team': ['Argentina', 'France', 'Croatia', 'Morocco', 'Brazil', 'England', 'Spain', 'Netherlands'],
-            'Goals': [15, 16, 8, 6, 8, 13, 9, 10],
-            'xG': [15.2, 13.8, 7.9, 5.2, 10.4, 11.2, 6.8, 7.1],
-            'Total_Passes': [3989, 3421, 4102, 2891, 3105, 3240, 4210, 2980],
-            'Completed_Passes': [3410, 2890, 3512, 2340, 2710, 2850, 3810, 2490],
-            'Key_Passes': [48, 45, 31, 22, 38, 41, 35, 26],
-            'Defensive_Actions': [410, 380, 521, 594, 320, 290, 310, 360],
-            'Saves': [12, 17, 25, 21, 9, 8, 6, 14]
-        })
-        players = pd.DataFrame({
-            'player': ['Kylian Mbappé', 'Lionel Messi', 'Olivier Giroud', 'Julián Álvarez', 'Antoine Griezmann', 'Luka Modrić'],
-            'team': ['France', 'Argentina', 'France', 'Argentina', 'France', 'Croatia'],
-            'Goals': [8, 7, 4, 4, 0, 1],
-            'xG': [5.8, 6.4, 3.2, 2.9, 1.8, 0.9],
-            'Key_Passes': [11, 18, 5, 4, 22, 14],
-            'Completed_Passes': [182, 241, 72, 85, 210, 415]
-        })
-    return teams, players
+def load_dashboard_matrices():
+    team_summary = pd.read_csv('wc_team_summary_clean.csv')
+    player_summary = pd.read_csv('wc_player_summary_clean.csv')
+    spatial_pos = pd.read_csv('wc_spatial_positions.csv')
+    spatial_shots = pd.read_csv('wc_spatial_shots.csv')
+    spatial_passes = pd.read_csv('wc_spatial_passes.csv')
+    return team_summary, player_summary, spatial_pos, spatial_shots, spatial_passes
 
-team_df, player_df = load_advanced_data()
+t_summary, p_summary, s_pos, s_shots, s_passes = load_dashboard_matrices()
 
-# --- 3. DYNAMIC CHART HELPER ---
-def apply_premium_chart_theme(fig):
+# --- 3. WIDE CHART GENERATION HELPER ---
+def render_wide_bar(df, x_col, y_col, title, color_hex):
+    # Sort descending based on performance metrics
+    sorted_df = df.sort_values(by=y_col, ascending=False).head(10)
+    
+    fig = px.bar(
+        sorted_df, 
+        x=x_col, 
+        y=y_col, 
+        title=title,
+        text=y_col # Directly binds the data values to the labels
+    )
+    fig.update_traces(
+        marker_color=color_hex,
+        texttemplate='%{text}', 
+        textposition='outside', # Places labels safely on the outer edge of the bar
+        cliponaxis=False
+    )
     fig.update_layout(
         template="plotly_dark",
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
-        font=dict(family="Inter, sans-serif", color="#94A3B8"),
-        title=dict(font=dict(size=16, color="#FFFFFF", family="Space Grotesk")), # <-- Fixed layout attribute mapping
-        margin=dict(l=20, r=20, t=50, b=20),
-        xaxis=dict(showgrid=False, zeroline=False),
-        yaxis=dict(showgrid=True, gridcolor="#1E293B", zeroline=False)
+        height=450, # Broad, high-impact landscape canvas
+        margin=dict(l=20, r=20, t=60, b=40),
+        xaxis=dict(title="", showgrid=False, type='category'),
+        yaxis=dict(title="", showgrid=True, gridcolor="#1A1D24"),
+        font=dict(family="Inter, sans-serif", size=13)
     )
-    return fig
+    st.plotly_chart(fig, use_container_width=True)
 
-# --- 4. HEADER ACCENT ---
-st.markdown("<h1 style='font-size: 32px; font-weight: 800; letter-spacing: -1px; margin-bottom: 0;'>STATS & ANALYTICS HUB</h1>", unsafe_allow_html=True)
-st.markdown("<p style='color: #64748B; margin-top:-5px;'>Qatar FIFA World Cup 2022 Core Performance Index</p>", unsafe_allow_html=True)
-
-# --- 5. VIEW TOGGLE ---
-view_mode = st.sidebar.radio("VIEW MODE", ["Squad Overviews", "Individual Profiles"])
-
-# --- VIEW: SQUAD OVERVIEWS ---
-if view_mode == "Squad Overviews":
+# --- 4. MAP CANVAS LAYOUTS (mplsoccer) ---
+def render_live_heatmap(spatial_df, entity_name, filter_col, title):
+    filtered = spatial_df[spatial_df[filter_col] == entity_name]
     
-    c1, c2, c3, c4 = st.columns(4)
-    with c1:
-        st.markdown('<div class="metric-card"><div class="metric-header">🏆 Gold Medalist</div><div class="metric-value">Argentina</div><div class="metric-sub">3rd Star Secured</div></div>', unsafe_allow_html=True)
-    with c2:
-        st.markdown('<div class="metric-card"><div class="metric-header">🎯 Top Firepower</div><div class="metric-value">France</div><div class="metric-sub">16 Goals Scored</div></div>', unsafe_allow_html=True)
-    with c3:
-        st.markdown('<div class="metric-card"><div class="metric-header">📈 Peak xG Engine</div><div class="metric-value">15.2</div><div class="metric-sub">Argentina Control</div></div>', unsafe_allow_html=True)
-    with c4:
-        st.markdown('<div class="metric-card"><div class="metric-header">🛡️ Defensive Wall</div><div class="metric-value">Morocco</div><div class="metric-sub">594 Hard Interventions</div></div>', unsafe_allow_html=True)
+    fig, ax = plt.subplots(figsize=(16, 9), facecolor='#111318')
+    pitch = Pitch(pitch_type='statsbomb', pitch_color='#111318', line_color='#2D3748', goal_type='line')
+    pitch.draw(ax=ax)
+    
+    if not filtered.empty:
+        # Generate 2D Histogram density fields
+        pitch.kdeplot(filtered['x'], filtered['y'], ax=ax, cmap='plasma', fill=True, shade_lowest=False, alpha=0.6, n_levels=10)
+    
+    plt.title(title, color='#FFFFFF', fontsize=18, pad=10, weight='bold')
+    st.pyplot(fig, clear_figure=True)
 
-    tab_atk, tab_mid, tab_def, tab_gk = st.tabs(["ATTACK", "MIDFIELD", "DEFENSE", "GOALKEEPERS"])
+def render_team_pass_network(team_name):
+    # Filters valid completions for pass maps
+    t_passes = s_passes[(s_passes['team'] == team_name) & (s_passes['completed'] == True)]
+    
+    fig, ax = plt.subplots(figsize=(16, 9), facecolor='#111318')
+    pitch = Pitch(pitch_type='statsbomb', pitch_color='#111318', line_color='#2D3748')
+    pitch.draw(ax=ax)
+    
+    if not t_passes.empty:
+        # Synthesize tactical positions using dynamic distribution centers
+        pitch.scatter(t_passes['x'].mean(), t_passes['y'].mean(), s=400, color='#38BDF8', edgecolors='#FFFFFF', ax=ax, zorder=3)
+        pitch.arrows(t_passes['x'].head(30), t_passes['y'].head(30), t_passes['end_x'].head(30), t_passes['end_y'].head(30), color='#38BDF8', alpha=0.3, width=2, headwidth=3, ax=ax)
+        
+    plt.title(f"{team_name} - Tactical Average Distribution Network", color='#FFFFFF', fontsize=18, pad=10, weight='bold')
+    st.pyplot(fig, clear_figure=True)
+
+# --- 5. APPLICATION CONTROL FLOW ---
+st.title("⚽ World Cup '22 Strategic Analytics Engine")
+view_scope = st.sidebar.radio("CHOOSE CONTROLLER PROFILE", ["Squad Database", "Player Profiles"])
+
+# --- TAB FRAMEWORK CODES ---
+if view_scope == "Squad Database":
+    t_choice = st.sidebar.selectbox("CHOOSE ACTIVE COUNTRY", sorted(t_summary['team'].unique()))
+    tab_atk, tab_mid, tab_def, tab_gk = st.tabs(["⚔️ ATTACK", "🎯 MIDFIELD", "🛡️ DEFENSE", "🧤 GOALKEEPERS"])
     
     with tab_atk:
-        col1, col2 = st.columns([1, 1])
-        with col1:
-            fig = px.bar(team_df.sort_values(by="Goals", ascending=False), x="team", y="Goals", title="Attacking Output by Squad")
-            fig.update_traces(marker_color='#F43F5E', marker_line_color='#FB7185', marker_line_width=1)
-            st.plotly_chart(apply_premium_chart_theme(fig), use_container_width=True)
-        with col2:
-            fig = px.scatter(team_df, x="xG", y="Goals", text="team", size="Goals", title="Conversion Efficiency Profile (Actual vs Expected)")
-            fig.update_traces(marker=dict(color='#38BDF8', line=dict(width=1, color='#7DD3FC')), textposition='top center')
-            st.plotly_chart(apply_premium_chart_theme(fig), use_container_width=True)
-            
+        render_wide_bar(t_summary, 'team', 'Goals', 'Tournament Finishing Leaderboard (Total Goals)', '#F43F5E')
+        render_wide_bar(t_summary, 'team', 'xG', 'Expected Goals (xG) Volume Ledger', '#FB7185')
+        st.markdown('<div class="pitch-container">', unsafe_allow_html=True)
+        render_live_heatmap(s_shots, t_choice, 'team', f"{t_choice} - Shot Generation Density Zones")
+        st.markdown('</div>', unsafe_allow_html=True)
+
     with tab_mid:
-        col1, col2 = st.columns(2)
-        with col1:
-            df_mid = team_df.assign(Pass_Acc=((team_df['Completed_Passes'] / team_df['Total_Passes']) * 100).round(1))
-            fig = px.bar(df_mid.sort_values(by="Pass_Acc", ascending=False), x="team", y="Pass_Acc", title="Distribution Accuracy Rating (%)")
-            fig.update_traces(marker_color='#6366F1')
-            st.plotly_chart(apply_premium_chart_theme(fig), use_container_width=True)
-        with col2:
-            fig = px.bar(team_df.sort_values(by="Key_Passes", ascending=False), x="team", y="Key_Passes", title="Chances Created (Key Passes)")
-            fig.update_traces(marker_color='#A855F7')
-            st.plotly_chart(apply_premium_chart_theme(fig), use_container_width=True)
+        render_wide_bar(t_summary, 'team', 'Succ_Passes', 'Distribution Leaders (Completed Base Passes)', '#6366F1')
+        render_wide_bar(t_summary, 'team', 'Prog_Passes', 'Line-Breaking Impact (Progressive Passes Passed)', '#818CF8')
+        st.markdown('<div class="pitch-container">', unsafe_allow_html=True)
+        render_team_pass_network(t_choice)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with tab_def:
-        fig = px.bar(team_df.sort_values(by="Defensive_Actions", ascending=False), x="team", y="Defensive_Actions", title="Defensive Volume Index")
-        fig.update_traces(marker_color='#10B981')
-        st.plotly_chart(apply_premium_chart_theme(fig), use_container_width=True)
-        
+        render_wide_bar(t_summary, 'team', 'Pressures', 'Defensive Interruptions (Total System Pressures)', '#10B981')
+        render_wide_bar(t_summary, 'team', 'Tackles', 'Ground Duels Contested (Successful Defensive Tackles)', '#34D399')
+
     with tab_gk:
-        fig = px.bar(team_df.sort_values(by="Saves", ascending=False), x="team", y="Saves", title="Crucial Conversions Saved")
-        fig.update_traces(marker_color='#F59E0B')
-        st.plotly_chart(apply_premium_chart_theme(fig), use_container_width=True)
+        render_wide_bar(t_summary, 'team', 'Saves', 'Prevented Goals Profile (Goalkeeper Shot-Stopping Saves)', '#F59E0B')
 
-# --- VIEW: INDIVIDUAL PROFILES ---
 else:
-    st.markdown("<h3 style='margin-bottom:15px;'>Player Index</h3>", unsafe_allow_html=True)
+    # Player Selection Flow
+    p_team = st.sidebar.selectbox("SQUAD FILTER", sorted(p_summary['team'].unique()))
+    filtered_p = p_summary[p_summary['team'] == p_team]
+    p_choice = st.sidebar.selectbox("CHOOSE INDIVIDUAL ATHLETE", sorted(filtered_p['player'].unique()))
     
-    col_side, col_main = st.columns([1, 3])
+    tab_atk, tab_mid, tab_def, tab_gk = st.tabs(["⚔️ ATTACK", "🎯 MIDFIELD", "🛡️ DEFENSE", "🧤 GOALKEEPERS"])
+    
+    with tab_atk:
+        render_wide_bar(p_summary, 'player', 'Goals', 'Golden Boot Standings (Total Goals)', '#F43F5E')
+        st.markdown('<div class="pitch-container">', unsafe_allow_html=True)
+        render_live_heatmap(s_pos, p_choice, 'player', f"{p_choice} - Position Aggregation Matrix Map")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    with col_side:
-        players_list = sorted(player_df['player'].unique()) if not player_df.empty else []
-        if not players_list:
-            st.info("No player data available")
-            selected_player = None
-            p_data = None
-        else:
-            selected_player = st.selectbox("CHOOSE PLAYER PROFILE", players_list)
-            sel_rows = player_df[player_df['player'] == selected_player]
-            p_data = sel_rows.iloc[0] if not sel_rows.empty else None
-        
-        if p_data is not None:
-            st.markdown(f"""
-                <div class="metric-card" style="border-left: 4px solid #38BDF8;">
-                    <div class="metric-header">Squad Role</div>
-                    <div class="metric-value" style="font-size:24px;">{p_data['player']}</div>
-                    <div class="metric-sub">{p_data['team']}</div>
-                </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.info("No player data available")
-        
-    with col_main:
-        categories = ['Goals', 'xG', 'Key_Passes', 'Completed_Passes']
-        
-        fig = go.Figure()
-        if p_data is not None:
-            vals = [
-                float(p_data.get('Goals', 0)) * 5,
-                float(p_data.get('xG', 0)) * 5,
-                float(p_data.get('Key_Passes', 0)),
-                float(p_data.get('Completed_Passes', 0)) / 10
-            ]
-        else:
-            vals = [0, 0, 0, 0]
+    with tab_mid:
+        render_wide_bar(p_summary, 'player', 'Prog_Passes', 'Midfield Transition Value (Progressive Passes)', '#6366F1')
 
-        fig.add_trace(go.Scatterpolar(
-            r=vals,
-            theta=categories,
-            fill='toself',
-            fillcolor='rgba(56, 189, 248, 0.2)',
-            line=dict(color='#38BDF8', width=2),
-            name=selected_player if p_data is not None else 'N/A'
-        ))
-        
-        fig.update_layout(
-            polar=dict(
-                radialaxis=dict(visible=False),
-                bgcolor='rgba(22, 25, 32, 0.7)',
-                gridshape='circular'
-            ),
-            paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='rgba(0,0,0,0)',
-            font=dict(color="#94A3B8")
-        )
-        st.plotly_chart(fig, use_container_width=True)
+    with tab_def:
+        render_wide_bar(p_summary, 'player', 'Recoveries', 'Ball Out-of-Possession Regains (Recoveries)', '#10B981')
+
+    with tab_gk:
+        render_wide_bar(p_summary, 'player', 'Saves', 'Glove Index Leaderboard (Total Saves)', '#F59E0B')
