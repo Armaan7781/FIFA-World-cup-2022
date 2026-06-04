@@ -76,15 +76,15 @@ st.markdown("""
         /* Premium Gradient Vector Header Canvas (Guaranteed to Load Instantly) */
         .premium-hero-header {
             width: 100%;
-            padding: 40px;
-            background: linear-gradient(135deg, #1E1B4B 0%, #0F111A 100%);
-            border: 1px solid #2E2A75;
+            padding: 45px;
+            background: linear-gradient(135deg, #1A102F 0%, #090A0F 100%);
+            border: 1px solid #2B1C4E;
             border-radius: 20px;
             margin-bottom: 35px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
         }
         
-        /* Spatial Canvas Box Wrappers */
+        /* Spatial Map Wrappers */
         .pitch-container {
             background: linear-gradient(145deg, #11131F 0%, #0B0C14 100%);
             border: 1px solid #1E2235;
@@ -131,7 +131,30 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- 2. COMPILED DATA REGISTRY MATRIX ENGINE ---
+# --- 2. ADVANCED DATA MATRICES & NAME-CLEANING ENGINE ---
+def shorten_player_name(name):
+    if not isinstance(name, str):
+        return name
+    mapping = {
+        "Lionel Andrés Messi Cuccittini": "Lionel Messi",
+        "Kylian Mbappé Lottin": "Kylian Mbappé",
+        "Rodrigo Hernández Cascante": "Rodri",
+        "Rodrigo Javier De Paul": "Rodrigo De Paul",
+        "Pedro González López": "Pedri",
+        "Wojciech Szczęsny": "W. Szczęsny",
+        "Cristiano Ronaldo dos Santos Aveiro": "Cristiano Ronaldo",
+        "Antoine Griezmann": "A. Griezmann",
+        "Luka Modrić": "Luka Modrić",
+        "Julián Álvarez": "Julián Álvarez",
+        "Alejandro Darío Gómez": "Papu Gómez"
+    }
+    if name in mapping:
+        return mapping[name]
+    parts = name.split()
+    if len(parts) > 3:
+        return f"{parts[0]} {parts[-1]}"
+    return name
+
 @st.cache_data
 def load_all_comprehensive_matrices():
     def auto_patch_missing_columns(df, scope="team"):
@@ -184,7 +207,7 @@ def load_all_comprehensive_matrices():
     except FileNotFoundError:
         teams_list = ['Argentina', 'France', 'Croatia', 'Morocco', 'Brazil', 'England', 'Spain', 'Netherlands']
         t_sum = pd.DataFrame({'team': teams_list})
-        p_sum = pd.DataFrame({'player': ['Lionel Messi', 'Kylian Mbappé', 'Luka Modrić', 'Achraf Hakimi', 'Casemiro', 'Harry Kane', 'Pedri', 'Virgil van Dijk'], 'team': teams_list})
+        p_sum = pd.DataFrame({'player': ['Lionel Andrés Messi Cuccittini', 'Kylian Mbappé Lottin', 'Luka Modrić', 'Achraf Hakimi', 'Casemiro', 'Harry Kane', 'Pedro González López', 'Virgil van Dijk'], 'team': teams_list})
         
         t_sum = auto_patch_missing_columns(t_sum, "team")
         p_sum = auto_patch_missing_columns(p_sum, "player")
@@ -192,6 +215,12 @@ def load_all_comprehensive_matrices():
         s_pos = pd.DataFrame(columns=['team', 'player', 'x', 'y'])
         s_sht = pd.DataFrame(columns=['team', 'player', 'x', 'y'])
         s_pas = pd.DataFrame(columns=['team', 'player', 'x', 'y', 'end_x', 'end_y', 'completed'])
+
+    # FIX: Corrected internal variable syntax targeting to prevent NameError exceptions
+    p_sum['player'] = p_sum['player'].apply(shorten_player_name)
+    if 'player' in s_pos.columns: s_pos['player'] = s_pos['player'].apply(shorten_player_name)
+    if 'player' in s_sht.columns: s_sht['player'] = s_sht['player'].apply(shorten_player_name)
+    if 'player' in s_pas.columns: s_pas['player'] = s_pas['player'].apply(shorten_player_name)
 
     t_sum['xG_vs_Goals'] = (t_sum['Goals'] - t_sum['xG']).round(2)
     p_sum['xG_vs_Goals'] = (p_sum['Goals'] - p_sum['xG']).round(2)
@@ -204,7 +233,6 @@ t_df, p_df, s_pos, s_shots, s_passes = load_all_comprehensive_matrices()
 
 # --- 3. CREATIVE HIGH-FIDELITY CHART ENGINES ---
 def render_gradient_bar_chart(df, x_col, y_col, title, colorscale_theme='viridis', decimal_format=False):
-    # FIX: Cleaned and unified lowercase colorscale keyword maps to resolve core value errors
     sorted_df = df[df[y_col] != 0].sort_values(by=y_col, ascending=False).head(10)
     if sorted_df.empty:
         return
@@ -241,6 +269,8 @@ def render_distribution_donut_chart(df, label_col, value_col, title):
     st.plotly_chart(fig, width='stretch')
 
 def render_performance_scatter_trend(df, x_col, y_col, label_col, title, decimal_format=False):
+    if len(df) < 2:
+        return
     fig = px.scatter(df, x=x_col, y=y_col, text=label_col, size=x_col, title=title, trendline="ols")
     fig.update_traces(textposition='top center', marker=dict(color='#38BDF8', size=10, line=dict(width=1, color='#FFFFFF')))
     fig.update_layout(
@@ -293,7 +323,6 @@ def render_passing_network_map(team_or_player_name, is_player=False):
 st.sidebar.markdown("<h3 style='color:#FFFFFF; font-family: Space Grotesk; letter-spacing:1px; margin-bottom:15px;'>ANALYSIS SCOPE</h3>", unsafe_allow_html=True)
 view_selector = st.sidebar.radio("SCOPE_MODE", ["Squad Level Metrics", "Individual Athlete Profiles"], label_visibility="collapsed")
 
-# Native Vector Canvas Header (Completely unblocked by hotlink firewalls)
 st.markdown("""
     <div class="premium-hero-header">
         <div>
@@ -303,51 +332,58 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# --- PANEL FLOW A: SQUAD LEVEL ANALYTICS ---
+# --- PANEL FLOW A: SQUAD LEVEL METRICS (TEAM MACRO VIEW) ---
 if view_selector == "Squad Level Metrics":
-    selected_squad = st.sidebar.selectbox("SELECT NATIONAL SQUAD", sorted(t_df['team'].unique()))
-    
-    # Drill Down Fix: Isolate individual players inside the squad
-    squad_players = p_df[p_df['team'] == selected_squad]
+    selected_squad = st.sidebar.selectbox("SELECT TARGET COUNTRY", sorted(t_df['team'].unique()))
     
     tab_atk, tab_mid, tab_def, tab_gk = st.tabs(["🎯 ATTACK PHASES", "👟 MIDFIELD ENGINE", "🛡️ DEFENSE SYSTEM", "🧤 GOALKEEPING PROFILE"])
     
     with tab_atk:
-        render_gradient_bar_chart(squad_players, 'player', 'Goals', f'{selected_squad.upper()} - SQUAD FINISHING LEADERS (GOALS)', 'reds')
-        render_gradient_bar_chart(squad_players, 'player', 'Assists', f'{selected_squad.upper()} - SQUAD CHANCES CONVERTED (ASSISTS)', 'peach')
-        render_distribution_donut_chart(squad_players, 'player', 'Shots', f'{selected_squad.upper()} - STRATEGIC SHOT CONTRIBUTIONS')
-        render_performance_scatter_trend(squad_players, 'xG', 'Goals', 'player', f'{selected_squad.upper()} - FINISHING EFFICIENCY CURVE (xG VS GOALS)', decimal_format=True)
-        render_gradient_bar_chart(squad_players, 'player', 'Pressures', 'ATTACKING LINE HIGH PRESSURES APPLIED', 'ylorrd')
+        render_gradient_bar_chart(t_df, 'team', 'Goals', 'TOURNAMENT TEAM FINISHING STANDINGS (GOALS)', 'reds')
+        render_gradient_bar_chart(t_df, 'team', 'Shots', 'TOTAL TEAM ATTEMPTED SHOTS VOLUME', 'peach')
+        render_gradient_bar_chart(t_df, 'team', 'Shots_OT', 'TOTAL TEAM ACCURATE SHOTS ON TARGET', 'pinkyl')
+        render_gradient_bar_chart(t_df, 'team', 'xG', 'EXPECTED GOALS (xG) VOLUME LEADERS', 'purples', decimal_format=True)
+        render_performance_scatter_trend(t_df, 'xG', 'Goals', 'team', 'TEAM FINISHING EFFICIENCY CURVE (xG VS GOALS)', decimal_format=True)
+        render_gradient_bar_chart(t_df, 'team', 'Pressures', 'OUT-OF-POSSESSION DEFENSIVE PRESSURES APPLIED', 'ylorrd')
+        render_gradient_bar_chart(t_df, 'team', 'Recoveries', 'POSSESSION BALL RECOVERIES LOGGED', 'magma')
         
         st.markdown('<div class="pitch-container">', unsafe_allow_html=True)
-        render_density_pitch_canvas(s_shots, selected_squad, 'team', f"{selected_squad.upper()} - SQUAD AVERAGE SHOT DISTRIBUTION DENSITY", 'flare')
+        render_density_pitch_canvas(s_shots, selected_squad, 'team', f"{selected_squad.upper()} - TEAM SHOT DENSITY CANVAS PROFILE", 'flare')
         st.markdown('</div>', unsafe_allow_html=True)
 
     with tab_mid:
-        render_gradient_bar_chart(squad_players, 'player', 'Passes', 'ATTEMPTED DISTRIBUTIONS VOLUME BY PLAYER', 'purples')
-        render_gradient_bar_chart(squad_players, 'player', 'Succ_Passes', 'COMPLETED DISTRIBUTION SEGMENTS', 'blues')
-        render_gradient_bar_chart(squad_players, 'player', 'Prog_Passes', 'LINE-BREAKING PROGRESSIVE DISTRIBUTION DRIVERS', 'cividis')
-        render_distribution_donut_chart(squad_players, 'player', 'Through_Balls', 'KEY THROUGH-BALL RATIOS')
-        render_gradient_bar_chart(squad_players, 'player', 'Touches', 'FIELD PLAY POSSESSION TOUCHES DENSITY', 'inferno')
-        render_gradient_bar_chart(squad_players, 'player', 'Second_Ball_Won', 'LOOSE BALL RECOVERIES (SECOND BALLS WON)', 'magma')
+        render_gradient_bar_chart(t_df, 'team', 'Passes', 'TOTAL DISTRIBUTION PASSES ATTEMPTED BY TEAM', 'purples')
+        render_gradient_bar_chart(t_df, 'team', 'Succ_Passes', 'TOTAL COMPLETE DISTRIBUTIONS LOGGED', 'blues')
+        render_gradient_bar_chart(t_df, 'team', 'Prog_Passes', 'LINE-BREAKING PROGRESSIVE DISTRIBUTION DRIVERS', 'cividis')
+        render_gradient_bar_chart(t_df, 'team', 'Crosses', 'FLANK FLUID DELIVERY VOLUMETRICS (CROSSES)', 'viridis')
+        render_gradient_bar_chart(t_df, 'team', 'Through_Balls', 'STRATEGIC KEY THROUGH BALL INTENTS', 'plasma')
+        render_gradient_bar_chart(t_df, 'team', 'Long_Balls', 'EXPANSIVE SWITCH PLAY VOLUMETRICS (LONG BALLS)', 'magma')
+        render_gradient_bar_chart(t_df, 'team', 'Passing_Acc', 'OVERALL SQUAD PASS ACCURACY RATIO (%)', 'blues', decimal_format=True)
+        render_gradient_bar_chart(t_df, 'team', 'Prog_Passing_Acc', 'PROGRESSIVE DISTRIBUTION EFFICIENCY RATIO (%)', 'purples', decimal_format=True)
+        render_gradient_bar_chart(t_df, 'team', 'Touches', 'TOTAL FIELD PLAY BALL TOUCHES VOLUME', 'inferno')
+        render_gradient_bar_chart(t_df, 'team', 'Second_Ball_Won', 'LOOSE BALLS RECOVERED (SECOND BALLS WON)', 'viridis')
         
         st.markdown('<div class="pitch-container">', unsafe_allow_html=True)
         render_passing_network_map(selected_squad, is_player=False)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with tab_def:
-        render_gradient_bar_chart(squad_players, 'player', 'Blocks', 'DEFENSIVE LINE POSITION BLOCKS EXECUTED', 'greens')
-        render_gradient_bar_chart(squad_players, 'player', 'Tackles', 'SUCCESSFUL GROUND DEFENSIVE TACKLES', 'tealgrn')
-        render_gradient_bar_chart(squad_players, 'player', 'Aerials_Won', 'AERIAL BALL DUELS WON SUPREMACY', 'viridis')
-        render_distribution_donut_chart(squad_players, 'player', 'Interceptions', 'TACTICAL PASS INTERCEPTIONS SEVERED')
-        render_gradient_bar_chart(squad_players, 'player', 'Errors', 'DEFENSIVE LINE UNFORCED ERRORS', 'orrd')
+        render_gradient_bar_chart(t_df, 'team', 'Blocks', 'SHOT & PASS DEFLECTIONS COMPLETED (BLOCKS)', 'greens')
+        render_gradient_bar_chart(t_df, 'team', 'Tackles', 'SUCCESSFUL GROUND CHALLENGES INDEX (TACKLES)', 'tealgrn')
+        render_gradient_bar_chart(t_df, 'team', 'Aerials_Won', 'AERIAL DUELS SUPREMACY STANDINGS', 'viridis')
+        render_gradient_bar_chart(t_df, 'team', 'Duels_Won', 'TOTAL FIELD CONTESTED DUELS WON', 'greens')
+        render_gradient_bar_chart(t_df, 'team', 'Ground_Duels_Won', 'GROUND CONTESTED DUELS WON', 'tealgrn')
+        render_gradient_bar_chart(t_df, 'team', 'Interceptions', 'TACTICAL LINE-SEVERING INTERCEPTIONS', 'viridis')
+        render_gradient_bar_chart(t_df, 'team', 'Errors', 'DEFENSIVE LINE SYSTEM DRIFT ERRORS', 'orrd')
+        render_gradient_bar_chart(t_df, 'team', 'Errors_Goal', 'CRITICAL BLUNDERS LEADING DIRECTLY TO GOAL', 'reds')
 
     with tab_gk:
-        # Keep team views intact for goalkeeping rosters
-        render_gradient_bar_chart(t_df, 'team', 'Saves', 'GOAL-LINE SAVES INDEX LEADERS', 'sunset')
+        render_gradient_bar_chart(t_df, 'team', 'Saves', 'GOAL-LINE CONVERSIONS PREVENTED (GK SAVES)', 'sunset')
         render_gradient_bar_chart(t_df, 'team', 'Long_Passes_Succ', 'GOALKEEPER SUCCESSFUL EXPANSIVE LONG BALLS', 'ylgnbu')
+        render_gradient_bar_chart(t_df, 'team', 'Pen_Saves', 'CRITICAL MATCHDAY PENALTY SAVES LOGGED', 'sunset')
+        render_gradient_bar_chart(t_df, 'team', 'Punches', 'BOX CLEARANCE CONTROL (PUNCHES LOGGED)', 'ylgnbu')
 
-# --- PANEL FLOW B: INDIVIDUAL ATHLETE PERFORMANCE ---
+# --- PANEL FLOW B: INDIVIDUAL ATHLETE PROFILES (DRILL DOWN PLAYER VIEW) ---
 else:
     squad_filter = st.sidebar.selectbox("FILTER ALIGNMENT BY SQUAD", sorted(p_df['team'].unique()))
     team_players = p_df[p_df['team'] == squad_filter]
@@ -371,28 +407,58 @@ else:
     
     with tab_atk:
         render_gradient_bar_chart(p_df, 'player', 'Goals', 'INDIVIDUAL GOALS LEADERBOARD', 'reds')
-        render_gradient_bar_chart(p_df, 'player', 'Assists', 'INDIVIDUAL ASSISTS LEADERBOARD', 'peach')
-        render_gradient_bar_chart(p_df, 'player', 'xG', 'EXPECTED GOALS (xG) LEADERBOARD', 'pinkyl', decimal_format=True)
-        render_gradient_bar_chart(p_df, 'player', 'xG_vs_Goals', 'GOALS MINUS EXPECTED GOALS RATIO', 'teal', decimal_format=True)
+        render_gradient_bar_chart(p_df, 'player', 'Assists', 'INDIVIDUAL ASSISTS LEADERBOARD (EXCLUSIVELY IN PLAYER METRICS)', 'peach')
+        render_gradient_bar_chart(p_df, 'player', 'Shots', 'INDIVIDUAL ATTEMPTED SHOTS CANVASES', 'pinkyl')
+        render_gradient_bar_chart(p_df, 'player', 'Shots_OT', 'ACCURATE SHOTS ON TARGET RECORDED', 'reds')
+        render_gradient_bar_chart(p_df, 'player', 'xG', 'EXPECTED GOALS (xG) INDIVIDUAL RATINGS', 'purples', decimal_format=True)
+        render_gradient_bar_chart(p_df, 'player', 'xG_vs_Goals', 'INDIVIDUAL CONVERSION EFFICIENCY SCORE', 'teal', decimal_format=True)
+        render_gradient_bar_chart(p_df, 'player', 'Pressures', 'OUT-OF-POSSESSION SYSTEM PRESSURES APPLIED', 'ylorrd')
+        render_gradient_bar_chart(p_df, 'player', 'Recoveries', 'POSSESSION BALL RECOVERIES LOGGED', 'magma')
         
         st.markdown('<div class="pitch-container">', unsafe_allow_html=True)
-        render_density_pitch_canvas(s_shots, selected_player, 'player', f"{selected_player.upper()} - INDIVIDUAL SHOT EXECUTIONBLUEPRINT MAP", 'plasma')
+        render_density_pitch_canvas(s_shots, selected_player, 'player', f"{selected_player.upper()} - INDIVIDUAL SHOT blueprint CANVAS", 'plasma')
         st.markdown('</div>', unsafe_allow_html=True)
 
     with tab_mid:
+        render_gradient_bar_chart(p_df, 'player', 'Passes', 'TOTAL DISTRIBUTION PASSES ATTEMPTED', 'purples')
+        render_gradient_bar_chart(p_df, 'player', 'Succ_Passes', 'TOTAL SUCCESSFUL PASS COMPLETIONS LOGGED', 'blues')
         render_gradient_bar_chart(p_df, 'player', 'Prog_Passes', 'LINE-BREAKING PROGRESSIVE DISTRIBUTION RECORDS', 'cividis')
+        render_gradient_bar_chart(p_df, 'player', 'Crosses', 'FLANK DELIVERY DISTRIBUTION LINES (CROSSES)', 'viridis')
+        render_gradient_bar_chart(p_df, 'player', 'Through_Balls', 'STRATEGIC KEY THROUGH BALLS LOGGED', 'plasma')
+        render_gradient_bar_chart(p_df, 'player', 'Long_Balls', 'EXPANSIVE DIRECT SWITCHES (LONG BALLS)', 'magma')
         render_gradient_bar_chart(p_df, 'player', 'Passing_Acc', 'PASS COMPLETION EFFICIENCY OVERVIEW (%)', 'plasma', decimal_format=True)
+        render_gradient_bar_chart(p_df, 'player', 'Prog_Passing_Acc', 'PROGRESSIVE DISTRIBUTION EFFICIENCY OVERVIEW (%)', 'purples', decimal_format=True)
+        render_gradient_bar_chart(p_df, 'player', 'Touches', 'TOTAL MATCHDAY BALL TOUCHES METRIC', 'inferno')
+        render_gradient_bar_chart(p_df, 'player', 'Second_Ball_Won', 'LOOSE BALL 50-50 CHALLENGES WON', 'magma')
         
         st.markdown('<div class="pitch-container">', unsafe_allow_html=True)
         render_density_pitch_canvas(s_pos, selected_player, 'player', f"{selected_player.upper()} - POSITIONING WEIGHT INTEGRATION HEATMAP", 'magma')
         st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('<div class="pitch-container">', unsafe_allow_html=True)
+        render_passing_network_map(selected_player, is_player=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with tab_def:
+        render_gradient_bar_chart(p_df, 'player', 'Blocks', 'TACTICAL SHOT & DISTRIBUTIONS BLOCKED', 'greens')
+        render_gradient_bar_chart(p_df, 'player', 'Passes', 'DEFENSIVE LINE BASE PASSES COMPLETED', 'blues')
         render_gradient_bar_chart(p_df, 'player', 'Tackles', 'INDIVIDUAL SUCCESSFUL GROUND TACKLES', 'greens')
+        render_gradient_bar_chart(p_df, 'player', 'Prog_Passes', 'OUT-OF-DEFENSE PROGRESSIVE DISTRIBUTIONS', 'cividis')
+        render_gradient_bar_chart(p_df, 'player', 'Aerials_Won', 'AERIAL CONTESTED CHALLENGES WON SUPREMACY', 'viridis')
+        render_gradient_bar_chart(p_df, 'player', 'Duels_Won', 'TOTAL CONTESTED FIELDS DUELS SECURED', 'greens')
+        render_gradient_bar_chart(p_df, 'player', 'Ground_Duels_Won', 'GROUND CONTESTED DUELS WON', 'tealgrn')
         render_gradient_bar_chart(p_df, 'player', 'Interceptions', 'TACTICAL PASS INTERCEPTIONS LOGGED', 'viridis')
+        render_gradient_bar_chart(p_df, 'player', 'Recoveries', 'DEFENSIVE ZONE CONTEXT BALL RECOVERIES', 'magma')
+        render_gradient_bar_chart(p_df, 'player', 'Errors', 'INDIVIDUAL POSITIONING DRIFT ERRORS', 'orrd')
+        render_gradient_bar_chart(p_df, 'player', 'Errors_Goal', 'CRITICAL DESTRUCTIVE BLUNDERS LEADING TO GOAL', 'reds')
 
     with tab_gk:
-        if p_data['Saves'] > 0:
+        if p_data['Saves'] > 0 or p_data['Punches'] > 0:
             render_gradient_bar_chart(p_df, 'player', 'Saves', 'GOALKEEPER SHOT-STOPPING RECORDS', 'sunset')
+            render_gradient_bar_chart(p_df, 'player', 'Passes', 'GOALKEEPER DISTRIBUTION LINE PASSES', 'blues')
+            render_gradient_bar_chart(p_df, 'player', 'Long_Passes_Succ', 'SUCCESSFUL GOALKEEPER LONG BALL BUILD-UP COMPLETIONS', 'ylgnbu')
+            render_gradient_bar_chart(p_df, 'player', 'Pen_Saves', 'CLUTCH MATCHDAY GOAL-LINE SAVES LOGGED', 'sunset')
+            render_gradient_bar_chart(p_df, 'player', 'Tackles', 'OUT-OF-BOX SWEEPER TACKLES DETECTED', 'tealgrn')
+            render_gradient_bar_chart(p_df, 'player', 'Punches', 'BOX CLEARANCE CONTROL (PUNCHES LOGGED)', 'ylgnbu')
+            render_gradient_bar_chart(p_df, 'player', 'Errors', 'GOALKEEPER UNFORCED HANDLING ERRORS LOGGED', 'orrd')
         else:
             st.info("The selected player contains no active goalkeeping records inside the data registry frame.")
