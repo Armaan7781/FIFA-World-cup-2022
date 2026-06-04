@@ -6,3 +6,4 @@ mplsoccer
 matplotlib
 statsmodels
 scipy
+highlight-text
