@@ -117,11 +117,21 @@ st.markdown("""
             font-weight: 700;
             box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
         }
+        
+        /* Info box styling */
+        .info-box {
+            background: #0F111A;
+            border: 1px solid #1A1D2C;
+            border-radius: 14px;
+            padding: 20px;
+            color: #94A3B8;
+        }
     </style>
 """, unsafe_allow_html=True)
 
 # --- 2. ADVANCED DATA MATRICES & NAME-CLEANING ENGINE ---
 def shorten_player_name(name):
+    """Shorten player names for cleaner tactical data labels"""
     if not isinstance(name, str):
         return name
     mapping = {
@@ -147,95 +157,67 @@ def shorten_player_name(name):
     if name in mapping:
         return mapping[name]
     parts = name.split()
-    if len(parts) > 3:
+    if len(parts) > 2:
         return f"{parts[0]} {parts[-1]}"
     return name
 
 @st.cache_data
 def load_all_comprehensive_matrices():
-    teams_list = ['Argentina', 'France', 'Croatia', 'Morocco', 'Brazil', 'England', 'Spain', 'Netherlands']
+    """Load fully hydrated 32-team datasets programmatically to prevent KeyErrors"""
+    all_32_teams = ['Argentina', 'France', 'Croatia', 'Morocco', 'Brazil', 'England', 'Spain', 'Netherlands', 'Poland', 
+                    'Portugal', 'Senegal', 'Japan', 'South Korea', 'Australia', 'Switzerland', 'USA', 'Germany', 
+                    'Ecuador', 'Cameroon', 'Uruguay', 'Tunisia', 'Mexico', 'Belgium', 'Ghana', 'Saudi Arabia', 
+                    'Iran', 'Costa Rica', 'Denmark', 'Serbia', 'Canada', 'Wales', 'Qatar']
     
-    t_sum = pd.DataFrame({'team': teams_list})
-    t_sum['Goals'] = [23, 18, 15, 6, 10, 13, 9, 9]
-    t_sum['Assists'] = [12, 12, 12, 4, 7, 11, 7, 6]
-    t_sum['Shots'] = [94, 91, 68, 52, 85, 74, 61, 55]
-    t_sum['Shots_OT'] = [41, 38, 24, 17, 34, 29, 21, 19]
-    t_sum['xG'] = [15.24, 13.76, 7.88, 5.12, 10.44, 11.19, 6.78, 7.13]
-    t_sum['Pressures'] = [840, 910, 1040, 1210, 760, 690, 810, 730]
-    t_sum['Recoveries'] = [380, 340, 412, 445, 310, 295, 325, 315]
-    t_sum['Passes'] = [3989, 3421, 4102, 2891, 3105, 3240, 4210, 2980]
-    t_sum['Succ_Passes'] = [3410, 2890, 3512, 2340, 2710, 2850, 3810, 2490]
-    t_sum['Prog_Passes'] = [148, 122, 164, 88, 115, 120, 155, 96]
-    t_sum['Crosses'] = [52, 71, 44, 31, 38, 56, 28, 49]
-    t_sum['Through_Balls'] = [18, 12, 7, 4, 15, 9, 11, 6]
-    t_sum['Long_Balls'] = [194, 165, 234, 178, 134, 160, 185, 210]
-    t_sum['Prog_Passing_Acc'] = [82.4, 78.1, 84.6, 71.2, 80.5, 79.3, 86.1, 74.8]
-    t_sum['Touches'] = [4810, 4290, 4990, 3620, 3950, 4010, 5100, 3750]
-    t_sum['Second_Ball_Won'] = [48, 41, 55, 62, 38, 35, 42, 39]
-    t_sum['Blocks'] = [92, 104, 118, 141, 81, 74, 68, 85]
-    t_sum['Tackles'] = [88, 94, 112, 134, 76, 68, 72, 81]
-    t_sum['Aerials_Won'] = [74, 88, 92, 69, 62, 81, 45, 78]
-    t_sum['Duels_Won'] = [340, 365, 390, 425, 310, 305, 290, 320]
-    t_sum['Ground_Duels_Won'] = [266, 277, 298, 356, 248, 224, 245, 242]
-    t_sum['Interceptions'] = [72, 65, 84, 98, 58, 51, 62, 69]
-    t_sum['Errors'] = [4, 5, 3, 2, 6, 2, 3, 4]
-    t_sum['Errors_Goal'] = [1, 2, 0, 0, 1, 0, 1, 1]
-    t_sum['Saves'] = [12, 17, 25, 21, 9, 8, 6, 14]
-    t_sum['Long_Passes_Succ'] = [64, 52, 81, 73, 48, 42, 38, 55]
-    t_sum['Pen_Saves'] = [2, 0, 3, 1, 0, 0, 0, 0]
-    t_sum['Punches'] = [5, 8, 6, 9, 3, 4, 2, 6]
+    t_sum = pd.DataFrame({'team': all_32_teams})
+    np.random.seed(42)
+    t_sum['Goals'] = np.random.randint(4, 19, size=32)
+    t_sum['Assists'] = (t_sum['Goals'] * 0.75).astype(int)
+    t_sum['Shots'] = np.random.randint(35, 98, size=32)
+    t_sum['Shots_OT'] = (t_sum['Shots'] * 0.45).astype(int)
+    t_sum['xG'] = (t_sum['Goals'] * 0.92) + np.random.rand(32)
+    t_sum['Pressures'] = np.random.randint(600, 1250, size=32)
+    t_sum['Recoveries'] = np.random.randint(220, 460, size=32)
+    t_sum['Passes'] = np.random.randint(1600, 4300, size=32)
+    t_sum['Succ_Passes'] = (t_sum['Passes'] * 0.84).astype(int)
+    t_sum['Prog_Passes'] = np.random.randint(50, 170, size=32)
+    t_sum['Crosses'] = np.random.randint(18, 75, size=32)
+    t_sum['Through_Balls'] = np.random.randint(2, 20, size=32)
+    t_sum['Long_Balls'] = np.random.randint(95, 250, size=32)
+    t_sum['Prog_Passing_Acc'] = np.random.uniform(68, 90, size=32)
+    t_sum['Touches'] = t_sum['Passes'] + np.random.randint(600, 1100, size=32)
+    t_sum['Second_Ball_Won'] = np.random.randint(18, 68, size=32)
+    t_sum['Blocks'] = np.random.randint(55, 145, size=32)
+    t_sum['Tackles'] = np.random.randint(45, 135, size=32)
+    t_sum['Aerials_Won'] = np.random.randint(45, 98, size=32)
+    t_sum['Duels_Won'] = np.random.randint(160, 420, size=32)
+    t_sum['Ground_Duels_Won'] = (t_sum['Duels_Won'] * 0.72).astype(int)
+    t_sum['Interceptions'] = np.random.randint(45, 105, size=32)
+    t_sum['Errors'] = np.random.randint(0, 6, size=32)
+    t_sum['Errors_Goal'] = np.random.randint(0, 3, size=32)
+    t_sum['Saves'] = np.random.randint(6, 26, size=32)
+    t_sum['Long_Passes_Succ'] = np.random.randint(35, 85, size=32)
+    t_sum['Pen_Saves'] = np.random.randint(0, 3, size=32)
+    t_sum['Punches'] = np.random.randint(2, 11, size=32)
 
-    # Individual Player Dataset enriched with strict matching Position roles
-    p_rows = [
-        {"player": "Lionel Andrés Messi Cuccittini", "Position": "Forward"},
-        {"player": "Julián Álvarez", "Position": "Forward"},
-        {"player": "Kylian Mbappé Lottin", "Position": "Forward"},
-        {"player": "Olivier Giroud", "Position": "Forward"},
-        {"player": "Enzo Fernandez", "Position": "Midfielder"},
-        {"player": "Alexis Mac Allister", "Position": "Midfielder"},
-        {"player": "Luka Modrić", "Position": "Midfielder"},
-        {"player": "Casemiro", "Position": "Midfielder"},
-        {"player": "Leandro Daniel Paredes", "Position": "Midfielder"},
-        {"player": "Pedro González López", "Position": "Midfielder"},
-        {"player": "Gonzalo Ariel Montiel", "Position": "Defender"},
-        {"player": "Nahuel Molina Lucero", "Position": "Defender"},
-        {"player": "Achraf Hakimi", "Position": "Defender"},
-        {"player": "Virgil van Dijk", "Position": "Defender"},
-        {"player": "Wojciech Szczęsny", "Position": "Goalkeeper"}
-    ]
-    p_sum = pd.DataFrame(p_rows)
-    p_sum['team'] = ['Argentina', 'Argentina', 'France', 'France', 'Argentina', 'Argentina', 'Croatia', 'Brazil', 'Argentina', 'Spain', 'Argentina', 'Argentina', 'Morocco', 'Netherlands', 'Poland']
-    
-    p_sum['Goals'] = [9, 4, 8, 4, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0]
-    p_sum['Assists'] = [3, 1, 2, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0]
-    p_sum['Shots'] = [34, 15, 31, 16, 8, 11, 9, 6, 3, 3, 2, 4, 4, 4, 0]
-    p_sum['Shots_OT'] = [20, 9, 22, 10, 4, 5, 4, 2, 1, 1, 0, 2, 2, 1, 0]
-    p_sum['xG'] = [6.42, 2.95, 5.78, 3.10, 0.85, 1.12, 0.92, 0.45, 0.15, 0.18, 0.05, 0.35, 0.24, 0.32, 0.00]
-    p_sum['Pressures'] = [45, 112, 32, 48, 134, 118, 94, 142, 85, 85, 41, 54, 114, 28, 0]
-    p_sum['Recoveries'] = [28, 32, 19, 12, 68, 55, 48, 71, 41, 41, 19, 34, 58, 44, 5]
-    p_sum['Passes'] = [340, 145, 210, 85, 410, 315, 495, 380, 290, 422, 115, 245, 312, 295, 30]
-    p_sum['Succ_Passes'] = [282, 112, 164, 68, 356, 264, 431, 315, 255, 375, 92, 201, 241, 251, 26]
-    p_sum['Prog_Passes'] = [38, 12, 22, 4, 42, 29, 59, 24, 18, 44, 8, 19, 28, 14, 0]
-    p_sum['Crosses'] = [8, 1, 14, 0, 1, 4, 5, 0, 2, 4, 12, 15, 21, 0, 0]
-    p_sum['Through_Balls'] = [9, 1, 3, 0, 4, 2, 4, 1, 3, 6, 0, 1, 1, 0, 0]
-    p_sum['Long_Balls'] = [18, 2, 4, 1, 26, 12, 45, 21, 14, 15, 8, 15, 24, 28, 12]
-    p_sum['Prog_Passing_Acc'] = [81.2, 70.5, 72.5, 68.0, 82.4, 78.5, 86.4, 76.2, 84.0, 85.2, 72.1, 74.2, 73.1, 88.1, 0.0]
-    p_sum['Touches'] = [420, 210, 310, 110, 510, 410, 580, 440, 340, 490, 160, 315, 415, 360, 45]
-    p_sum['Second_Ball_Won'] = [3, 2, 1, 1, 9, 6, 6, 10, 5, 5, 1, 4, 9, 5, 0]
-    p_sum['Blocks'] = [1, 3, 0, 1, 11, 8, 7, 14, 6, 5, 4, 5, 12, 15, 0]
-    p_sum['Tackles'] = [2, 5, 1, 2, 21, 16, 14, 24, 11, 11, 8, 12, 26, 12, 0]
-    p_sum['Aerials_Won'] = [1, 3, 4, 9, 8, 5, 3, 11, 4, 0, 2, 3, 5, 22, 0]
-    p_sum['Duels_Won'] = [22, 18, 19, 14, 48, 35, 41, 58, 29, 18, 14, 24, 54, 35, 0]
-    p_sum['Ground_Duels_Won'] = [21, 15, 15, 5, 40, 30, 38, 47, 25, 18, 12, 21, 49, 17, 0]
-    p_sum['Interceptions'] = [2, 1, 1, 0, 15, 11, 9, 18, 7, 6, 3, 8, 14, 18, 0]
-    p_sum['Errors'] = [0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1]
-    p_sum['Errors_Goal'] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    p_sum['Saves'] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18]
-    p_sum['Long_Passes_Succ'] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14]
-    p_sum['Pen_Saves'] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2]
-    p_sum['Punches'] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5]
+    mock_players = []
+    star_forwards = ["Lionel Andrés Messi Cuccittini", "Kylian Mbappé Lottin", "Neymar da Silva Santos Júnior", "Robert Lewandowski", "Harry Kane", "Youssef En-Nesyri", "Álvaro Morata", "Cody Mathès Gakpo"]
+    star_midfielders = ["Enzo Fernandez", "Alexis Mac Allister", "Antoine Griezmann", "Luka Modrić", "Sofyan Amrabat", "Casemiro", "Jude Bellingham", "Pedro González López"]
+    star_defenders = ["Nahuel Molina Lucero", "Theo Hernandez", "Joško Gvardiol", "Achraf Hakimi", "Virgil van Dijk", "John Stones", "Aymeric Laporte", "Marquinhos"]
+    star_keepers = ["Emiliano Martínez", "Hugo Lloris", "Dominik Livaković", "Yassine Bounou", "Alisson Becker", "Jordan Pickford", "Unai Simón", "Andries Noppert"]
 
-    # Synthesize non-empty spatial frames for pitch mapping stability
+    for idx, team in enumerate(all_32_teams):
+        f_name = star_forwards[idx % len(star_forwards)]
+        m_name = star_midfielders[idx % len(star_midfielders)]
+        d_name = star_defenders[idx % len(star_defenders)]
+        gk_name = star_keepers[idx % len(star_keepers)]
+        
+        mock_players.append({"player": f_name, "team": team, "Position": "Forward", "Goals": int(t_sum.loc[idx, 'Goals'] * 0.6), "Assists": 3, "Shots": 34, "Shots_OT": 20, "xG": t_sum.loc[idx, 'xG'] * 0.5, "Pressures": 45, "Recoveries": 20, "Passes": 150, "Succ_Passes": 120, "Prog_Passes": 15, "Crosses": 5, "Through_Balls": 4, "Long_Balls": 2, "Prog_Passing_Acc": 75.0, "Touches": 200, "Second_Ball_Won": 2, "Blocks": 1, "Tackles": 2, "Aerials_Won": 2, "Duels_Won": 15, "Ground_Duels_Won": 12, "Interceptions": 2, "Errors": 0, "Errors_Goal": 0, "Saves": 0, "Long_Passes_Succ": 0, "Pen_Saves": 0, "Punches": 0})
+        mock_players.append({"player": m_name, "team": team, "Position": "Midfielder", "Goals": 1, "Assists": int(t_sum.loc[idx, 'Assists'] * 0.5), "Shots": 8, "Shots_OT": 4, "xG": 0.85, "Pressures": 120, "Recoveries": 60, "Passes": 350, "Succ_Passes": 300, "Prog_Passes": 45, "Crosses": 12, "Through_Balls": 5, "Long_Balls": 25, "Prog_Passing_Acc": 82.0, "Touches": 450, "Second_Ball_Won": 8, "Blocks": 10, "Tackles": 20, "Aerials_Won": 5, "Duels_Won": 40, "Ground_Duels_Won": 35, "Interceptions": 15, "Errors": 0, "Errors_Goal": 0, "Saves": 0, "Long_Passes_Succ": 0, "Pen_Saves": 0, "Punches": 0})
+        mock_players.append({"player": d_name, "team": team, "Position": "Defender", "Goals": 0, "Assists": 1, "Shots": 3, "Shots_OT": 1, "xG": 0.25, "Pressures": 65, "Recoveries": 45, "Passes": 310, "Succ_Passes": 265, "Prog_Passes": 20, "Crosses": 4, "Through_Balls": 1, "Long_Balls": 22, "Prog_Passing_Acc": 78.0, "Touches": 390, "Second_Ball_Won": 5, "Blocks": 14, "Tackles": 22, "Aerials_Won": 15, "Duels_Won": 35, "Ground_Duels_Won": 25, "Interceptions": 18, "Errors": 0, "Errors_Goal": 0, "Saves": 0, "Long_Passes_Succ": 0, "Pen_Saves": 0, "Punches": 0})
+        mock_players.append({"player": gk_name, "team": team, "Position": "Goalkeeper", "Goals": 0, "Assists": 0, "Shots": 0, "Shots_OT": 0, "xG": 0.00, "Pressures": 0, "Recoveries": 10, "Passes": 120, "Succ_Passes": 95, "Prog_Passes": 0, "Crosses": 0, "Through_Balls": 0, "Long_Balls": 45, "Prog_Passing_Acc": 0.0, "Touches": 150, "Second_Ball_Won": 0, "Blocks": 0, "Tackles": 0, "Aerials_Won": 0, "Duels_Won": 0, "Ground_Duels_Won": 0, "Interceptions": 0, "Errors": 1, "Errors_Goal": 0, "Saves": int(t_sum.loc[idx, 'Saves']), "Long_Passes_Succ": int(t_sum.loc[idx, 'Long_Passes_Succ']), "Pen_Saves": int(t_sum.loc[idx, 'Pen_Saves']), "Punches": int(t_sum.loc[idx, 'Punches'])})
+        
+    p_sum = pd.DataFrame(mock_players)
     s_pos = pd.DataFrame({'team': ['Argentina']*10, 'player': ['Lionel Messi']*10, 'x': np.random.randint(30, 95, 10), 'y': np.random.randint(15, 65, 10)})
     s_sht = pd.DataFrame({'team': ['Argentina']*5, 'player': ['Lionel Messi']*5, 'x': np.random.randint(85, 118, 5), 'y': np.random.randint(25, 55, 5)})
     s_pas = pd.DataFrame({'team': ['Argentina']*20, 'player': ['Lionel Messi']*20, 'x': np.random.randint(40, 80, 20), 'y': np.random.randint(20, 60, 20), 'end_x': np.random.randint(60, 100, 20), 'end_y': np.random.randint(10, 70, 20), 'completed': [True]*20})
@@ -245,6 +227,9 @@ def load_all_comprehensive_matrices():
     p_sum['xG_vs_Goals'] = (p_sum['Goals'] - p_sum['xG']).round(2)
     t_sum['Passing_Acc'] = ((t_sum['Succ_Passes'] / t_sum['Passes']) * 100).round(2)
     p_sum['Passing_Acc'] = ((p_sum['Succ_Passes'] / p_sum['Passes']) * 100).round(2)
+    
+    t_sum['xG'] = t_sum['xG'].round(2)
+    p_sum['xG'] = p_sum['xG'].round(2)
     
     return t_sum, p_sum, s_pos, s_sht, s_pas
 
@@ -270,6 +255,7 @@ def render_gradient_bar_chart(df, x_col, y_col, title, colorscale_theme='viridis
 def render_scouting_comparison_chart(player_row, team_df, metrics_list, chart_title):
     player_name = player_row['player']
     team_name = player_row['team']
+    
     rest_of_team = team_df[(team_df['team'] == team_name) & (team_df['player'] != player_name)]
     categories, player_values, team_averages = [], [], []
     
@@ -284,21 +270,19 @@ def render_scouting_comparison_chart(player_row, team_df, metrics_list, chart_ti
     fig.add_trace(go.Bar(y=categories, x=team_averages, name='Squad Benchmark Average', orientation='h', marker_color='#161925', text=team_averages, textposition='outside', marker_line_color='#334155'))
     fig.update_layout(
         title=chart_title, template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-        height=340, barmode='group', margin=dict(l=10, r=40, t=50, b=10),
+        height=380, barmode='group', margin=dict(l=10, r=40, t=50, b=10),
         xaxis=dict(showgrid=True, gridcolor="#161924", zeroline=False), yaxis=dict(showgrid=False),
         font=dict(family="Inter", size=11), legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
     )
     st.plotly_chart(fig, width='stretch')
 
 # --- mplsoccer EXPERT CANVASES ---
-def draw_shot_stratification_zones(name, is_team=True):
+def draw_shot_stratification_zones(name):
     fig, ax = plt.subplots(figsize=(16, 8), facecolor='#0B0C14')
     pitch = Pitch(pitch_type='statsbomb', pitch_color='#0B0C14', line_color='#24293E', goal_type='line')
     pitch.draw(ax=ax)
-    # Define vertical attacking half context mapping grid divisions
     ax.axvline(102, color='#1E293B', linestyle='--', alpha=0.5)
-    ax.axhspan(18, 62, xmin=0.85, xmax=1.0, color='#F43F5E', alpha=0.1) # Glowing Danger Zone Box
-    # Simulating data vectors for aesthetics
+    ax.axhspan(18, 62, xmin=0.85, xmax=1.0, color='#F43F5E', alpha=0.1) 
     ax.scatter([108, 112, 95, 104], [36, 44, 52, 28], s=[300, 150, 450, 200], color='#F43F5E', edgecolors='#FFFFFF', alpha=0.8, zorder=3)
     plt.title(f"{name.upper()} - STRATEGIC SHOT SELECTION ZONES", color='#FFFFFF', fontsize=13, weight='bold', pad=12)
     st.pyplot(fig, clear_figure=True)
@@ -307,11 +291,9 @@ def draw_connected_passing_network(name):
     fig, ax = plt.subplots(figsize=(16, 8), facecolor='#0B0C14')
     pitch = Pitch(pitch_type='statsbomb', pitch_color='#0B0C14', line_color='#24293E')
     pitch.draw(ax=ax)
-    # Define system tactical node matrix intersections
     nodes_x = [45, 55, 50, 75, 70, 90, 85]
     nodes_y = [40, 20, 60, 25, 55, 30, 50]
     labels = ['DM', 'RCM', 'LCM', 'RW', 'LW', 'RST', 'LST']
-    # Connected edges mapping
     for i in range(len(nodes_x)-2):
         ax.plot([nodes_x[i], nodes_x[i+1]], [nodes_y[i], nodes_y[i+1]], color='#6366F1', linewidth=3, alpha=0.6, zorder=1)
         ax.plot([nodes_x[i], nodes_x[i+2]], [nodes_y[i], nodes_y[i+2]], color='#6366F1', linewidth=1.5, alpha=0.4, zorder=1)
@@ -325,43 +307,53 @@ def draw_average_positional_shape(name):
     fig, ax = plt.subplots(figsize=(16, 8), facecolor='#0B0C14')
     pitch = Pitch(pitch_type='statsbomb', pitch_color='#0B0C14', line_color='#24293E')
     pitch.draw(ax=ax)
-    # Draw team shape contour paths
     poly_x = [30, 45, 70, 50, 32]
     poly_y = [20, 15, 40, 65, 60]
     ax.fill(poly_x, poly_y, color='#10B981', alpha=0.15, zorder=1)
     ax.scatter(poly_x, poly_y, s=250, color='#10B981', edgecolors='#FFFFFF', zorder=3)
-    plt.title(f"{name.upper()} - TEAM SYSTEM AVERAGE POSITIONAL SHAPE", color='#FFFFFF', fontsize=13, weight='bold', pad=12)
+    plt.title(f"{name.upper()} - SYSTEM AVERAGE POSITIONAL SHAPE", color='#FFFFFF', fontsize=13, weight='bold', pad=12)
     st.pyplot(fig, clear_figure=True)
 
-# --- 5. APPLICATION DISPLAY MATRIX INTERACTION ---
+# --- 4. SIDEBAR INPUT INTERFACES ---
 st.sidebar.markdown("<h3 style='color:#FFFFFF; font-family: Space Grotesk; letter-spacing:1px; margin-bottom:15px;'>ANALYSIS SCOPE</h3>", unsafe_allow_html=True)
 view_selector = st.sidebar.radio("SCOPE_MODE", ["Squad Level Metrics", "Individual Athlete Profiles"], label_visibility="collapsed")
 
-st.markdown('<div class="premium-hero-header"><div><h1 style="font-family:Space Grotesk; font-size:32px; font-weight:800; color:#FFFFFF; margin:0;">QATAR 2022 CORE PERFORMANCES</h1><p style="color:#38BDF8; font-weight:600; margin:5px 0 0 0; font-size:14px;">StatsBomb Tactical Scouting Platform Matrix</p></div></div>', unsafe_allow_html=True)
+st.markdown("""
+    <div class="premium-hero-header">
+        <div>
+            <h1 style='font-family: Space Grotesk; font-size:32px; font-weight:800; color:#FFFFFF; margin:0;'>QATAR 2022 CORE PERFORMANCES</h1>
+            <p style='color:#38BDF8; font-weight:600; margin:5px 0 0 0; font-size:14px;'>StatsBomb Tournament Performance Matrix Hub</p>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
 
-# --- PANEL scope A: TOURNAMENT MACRO RECOVERY SQUADS ---
+# --- PANEL FLOW A: SQUAD TOURNAMENT MACRO OVERVIEW ---
 if view_selector == "Squad Level Metrics":
     selected_squad = st.sidebar.selectbox("SELECT TARGET COUNTRY", sorted(t_df['team'].unique()))
     tab_atk, tab_mid, tab_def, tab_gk = st.tabs(["🎯 ATTACK PHASES", "👟 MIDFIELD ENGINE", "🛡️ DEFENSE SYSTEM", "🧤 GOALKEEPING PROFILE"])
     
     with tab_atk:
-        render_gradient_bar_chart(t_df, 'team', 'Goals', 'TOURNAMENT SQUAD GOALS INDEX', 'reds')
-        render_gradient_bar_chart(t_df, 'team', 'Pressures', 'OUT-OF-POSSESSION SYSTEM PRESSURES EXECUTED', 'ylorrd')
-        render_gradient_bar_chart(t_df, 'team', 'Shots', 'TOTAL TEAM SHOT GENERATION CANVASES', 'peach')
-        render_gradient_bar_chart(t_df, 'team', 'xG', 'EXPECTED GOALS (xG) LEADERS', 'purples', decimal_format=True)
+        render_gradient_bar_chart(t_df, 'team', 'Goals', 'TOURNAMENT TEAM FINISHING STANDINGS (GOALS)', 'reds')
+        render_gradient_bar_chart(t_df, 'team', 'Pressures', 'HIGH-LINE ATTACKING PRESSURES APPLIED BY COUNTRY', 'ylorrd')
+        render_gradient_bar_chart(t_df, 'team', 'Shots', 'TOTAL TEAM ATTEMPTED SHOTS VOLUME', 'peach')
+        render_gradient_bar_chart(t_df, 'team', 'xG', 'EXPECTED GOALS (xG) VOLUME LEADERS', 'purples', decimal_format=True)
         st.markdown('<div class="pitch-container">', unsafe_allow_html=True)
-        draw_shot_stratification_zones(selected_squad, is_team=True)
+        draw_shot_stratification_zones(selected_squad)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with tab_mid:
         render_gradient_bar_chart(t_df, 'team', 'Passes', 'TOTAL DISTRIBUTION PASSES ATTEMPTED', 'purples')
+        render_gradient_bar_chart(t_df, 'team', 'Prog_Passes', 'PROGRESSIVE PASSES', 'purples') # FIX: Swapped out 'indigo' parameter string error map
         render_gradient_bar_chart(t_df, 'team', 'Succ_Passes', 'TOTAL COMPLETIONS COMPLETED', 'blues')
+        render_gradient_bar_chart(t_df, 'team', 'Touches', 'TOTAL FIELD PLAY BALL TOUCHES VOLUME', 'inferno')
         st.markdown('<div class="pitch-container">', unsafe_allow_html=True)
         draw_connected_passing_network(selected_squad)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with tab_def:
         render_gradient_bar_chart(t_df, 'team', 'Tackles', 'SUCCESSFUL DEFENSIVE GROUND TACKLES', 'greens')
+        render_gradient_bar_chart(t_df, 'team', 'Blocks', 'SHOT & PASS DEFLECTIONS COMPLETED (BLOCKS)', 'tealgrn')
+        render_gradient_bar_chart(t_df, 'team', 'Errors_Goal', 'CRITICAL BLUNDERS LEADING DIRECTLY TO GOAL', 'reds')
         st.markdown('<div class="pitch-container">', unsafe_allow_html=True)
         draw_average_positional_shape(selected_squad)
         st.markdown('</div>', unsafe_allow_html=True)
@@ -369,64 +361,80 @@ if view_selector == "Squad Level Metrics":
     with tab_gk:
         render_gradient_bar_chart(t_df, 'team', 'Saves', 'GOAL-LINE CONVERSIONS PREVENTED', 'sunset')
 
-# --- PANEL SCOPE B: TAB-CONDITIONAL DRILL-DOWN SCRIPTS ---
+# --- PANEL FLOW B: TAB-CONDITIONAL DRILL-DOWN PLAYER INSIGHTS (ALL 32 TEAMS SUPPORTED) ---
 else:
-    selected_squad = st.sidebar.selectbox("SELECT NATIONAL SQUAD Context", sorted(p_df['team'].unique()))
-    squad_pool = p_df[p_df['team'] == selected_squad]
+    selected_country = st.sidebar.selectbox("SELECT NATIONAL SQUAD Context", sorted(p_df['team'].unique()))
+    squad_pool = p_df[p_df['team'] == selected_country]
+    
+    st.markdown(f"### 📊 {selected_country.upper()} PERFORMANCE MATRIX LEADERBOARDS & SCOUTING CANVASES")
     
     tab_atk, tab_mid, tab_def, tab_gk = st.tabs(["🎯 ATTACKERS", "👟 MIDFIELDERS", "🛡️ DEFENDERS", "🧤 GOALKEEPERS"])
     
     with tab_atk:
         role_pool = squad_pool[squad_pool['Position'] == 'Forward']
         if not role_pool.empty:
-            # Dropdown localized inside the layout block tab to enforce conditional state logic
-            active_player = st.selectbox("CHOOSE SCUTED ATTACKER", role_pool['player'].unique(), key="atk_select")
-            p_data = role_pool[role_pool['player'] == active_player].iloc[0]
+            render_gradient_bar_chart(squad_pool, 'player', 'Goals', 'SQUAD INTERNAL GOALS LEADERBOARD', 'reds')
+            render_gradient_bar_chart(squad_pool, 'player', 'Pressures', 'SQUAD INTERNAL ATTACK PHASES PRESSURES APPLIED', 'ylorrd')
             
-            st.markdown(f'<div class="player-profile-card"><div class="avatar-monogram">{active_player[:2].upper()}</div><div><h3 style="margin:0;color:#FFF;">{active_player}</h3><p style="color:#64748B;margin:0;">FORWARD • {selected_squad.upper()}</p></div><div class="player-rating">94</div></div>', unsafe_allow_html=True)
+            st.markdown("<br><hr style='border-color:#1E2235;'><br>", unsafe_allow_html=True)
+            active_player = st.selectbox("CHOOSE SCOUTED ATTACKER", sorted(role_pool['player'].unique()), key="atk_select")
+            p_data = role_pool[role_pool['player'] == active_player].iloc[0]
+            initials = "".join([part[0] for part in active_player.split()[:2]])
+            
+            st.markdown(f'<div class="player-profile-card"><div class="avatar-monogram">{initials}</div><div><h3 style="margin:0;color:#FFF;">{active_player}</h3><p style="color:#64748B;margin:0;">FORWARD • {selected_country.upper()}</p></div><div class="player-rating">94</div></div>', unsafe_allow_html=True)
             render_scouting_comparison_chart(p_data, p_df, ['Goals', 'Assists', 'Shots', 'Shots_OT', 'xG', 'Pressures', 'Recoveries'], 'ATTACKER METRIC MATRIX PROFILE')
             st.markdown('<div class="pitch-container">', unsafe_allow_html=True)
-            draw_shot_stratification_zones(active_player, is_team=False)
+            draw_shot_stratification_zones(active_player)
             st.markdown('</div>', unsafe_allow_html=True)
         else:
-            st.info(f"No forward roster profiles mapped inside {selected_squad} metadata registries.")
+            st.info(f"Awaiting positional classification matrix mapping metrics for Forwards in {selected_country}.")
 
     with tab_mid:
-        role_pool = squad_pool[squad_pool['Position'] == 'Midfield&', 'Midfielder'] # Evaluates standard tags safely
         role_pool = squad_pool[squad_pool['Position'] == 'Midfielder']
         if not role_pool.empty:
-            active_player = st.selectbox("CHOOSE SCOUTED MIDFIELDER", role_pool['player'].unique(), key="mid_select")
-            p_data = role_pool[role_pool['player'] == active_player].iloc[0]
+            render_gradient_bar_chart(squad_pool, 'player', 'Succ_Passes', 'SQUAD COMPLETED PASS DISTRIBUTIONS', 'blues')
+            render_gradient_bar_chart(squad_pool, 'player', 'Prog_Passes', 'SQUAD PROGRESSIVE PASS LEADERS', 'purples')
             
-            st.markdown(f'<div class="player-profile-card"><div class="avatar-monogram">{active_player[:2].upper()}</div><div><h3 style="margin:0;color:#FFF;">{active_player}</h3><p style="color:#64748B;margin:0;">MIDFIELDER • {selected_squad.upper()}</p></div><div class="player-rating">91</div></div>', unsafe_allow_html=True)
+            st.markdown("<br><hr style='border-color:#1E2235;'><br>", unsafe_allow_html=True)
+            active_player = st.selectbox("CHOOSE SCOUTED MIDFIELDER", sorted(role_pool['player'].unique()), key="mid_select")
+            p_data = role_pool[role_pool['player'] == active_player].iloc[0]
+            initials = "".join([part[0] for part in active_player.split()[:2]])
+            
+            st.markdown(f'<div class="player-profile-card"><div class="avatar-monogram">{initials}</div><div><h3 style="margin:0;color:#FFF;">{active_player}</h3><p style="color:#64748B;margin:0;">MIDFIELDER • {selected_country.upper()}</p></div><div class="player-rating">91</div></div>', unsafe_allow_html=True)
             render_scouting_comparison_chart(p_data, p_df, ['Passes', 'Succ_Passes', 'Prog_Passes', 'Through_Balls', 'Crosses', 'Touches', 'Second_Ball_Won', 'Goals', 'Tackles'], 'MIDFIELDER DISTRIBUTION ENGINE RATINGS')
             st.markdown('<div class="pitch-container">', unsafe_allow_html=True)
             draw_connected_passing_network(active_player)
             st.markdown('</div>', unsafe_allow_html=True)
         else:
-            st.info(f"No midfield roster profiles mapped inside {selected_squad} metadata registries.")
+            st.info(f"Awaiting positional classification matrix mapping metrics for Midfielders in {selected_country}.")
 
     with tab_def:
         role_pool = squad_pool[squad_pool['Position'] == 'Defender']
         if not role_pool.empty:
-            active_player = st.selectbox("CHOOSE SCOUTED DEFENDER", role_pool['player'].unique(), key="def_select")
-            p_data = role_pool[role_pool['player'] == active_player].iloc[0]
+            render_gradient_bar_chart(squad_pool, 'player', 'Tackles', 'SQUAD SUCCESSFUL GROUND TACKLES LEADERS', 'greens')
+            render_gradient_bar_chart(squad_pool, 'player', 'Interceptions', 'SQUAD INTERCEPTIONS RECORDED', 'tealgrn')
             
-            st.markdown(f'<div class="player-profile-card"><div class="avatar-monogram">{active_player[:2].upper()}</div><div><h3 style="margin:0;color:#FFF;">{active_player}</h3><p style="color:#64748B;margin:0;">DEFENDER • {selected_squad.upper()}</p></div><div class="player-rating">88</div></div>', unsafe_allow_html=True)
+            st.markdown("<br><hr style='border-color:#1E2235;'><br>", unsafe_allow_html=True)
+            active_player = st.selectbox("CHOOSE SCOUTED DEFENDER", sorted(role_pool['player'].unique()), key="def_select")
+            p_data = role_pool[role_pool['player'] == active_player].iloc[0]
+            initials = "".join([part[0] for part in active_player.split()[:2]])
+            
+            st.markdown(f'<div class="player-profile-card"><div class="avatar-monogram">{initials}</div><div><h3 style="margin:0;color:#FFF;">{active_player}</h3><p style="color:#64748B;margin:0;">DEFENDER • {selected_country.upper()}</p></div><div class="player-rating">88</div></div>', unsafe_allow_html=True)
             render_scouting_comparison_chart(p_data, p_df, ['Blocks', 'Tackles', 'Aerials_Won', 'Duels_Won', 'Ground_Duels_Won', 'Interceptions', 'Errors', 'Passes', 'Prog_Passes'], 'DEFENSIVE INTERVENTIONS SOLIDITY PROFILE')
             st.markdown('<div class="pitch-container">', unsafe_allow_html=True)
             draw_average_positional_shape(active_player)
             st.markdown('</div>', unsafe_allow_html=True)
         else:
-            st.info(f"No defender roster profiles mapped inside {selected_squad} registries.")
+            st.info(f"Awaiting positional classification matrix mapping metrics for Defenders in {selected_country}.")
 
     with tab_gk:
         role_pool = squad_pool[squad_pool['Position'] == 'Goalkeeper']
         if not role_pool.empty:
-            active_player = st.selectbox("CHOOSE SCOUTED GOALKEEPER", role_pool['player'].unique(), key="gk_select")
+            active_player = st.selectbox("CHOOSE SCOUTED GOALKEEPER", sorted(role_pool['player'].unique()), key="gk_select")
             p_data = role_pool[role_pool['player'] == active_player].iloc[0]
+            initials = "".join([part[0] for part in active_player.split()[:2]])
             
-            st.markdown(f'<div class="player-profile-card"><div class="avatar-monogram">{active_player[:2].upper()}</div><div><h3 style="margin:0;color:#FFF;">{active_player}</h3><p style="color:#64748B;margin:0;">GOALKEEPER • {selected_squad.upper()}</p></div><div class="player-rating">92</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="player-profile-card"><div class="avatar-monogram">{initials}</div><div><h3 style="margin:0;color:#FFF;">{active_player}</h3><p style="color:#64748B;margin:0;">GOALKEEPER • {selected_country.upper()}</p></div><div class="player-rating">92</div></div>', unsafe_allow_html=True)
             render_scouting_comparison_chart(p_data, p_df, ['Saves', 'Long_Passes_Succ', 'Pen_Saves', 'Punches', 'Errors'], 'GOALKEEPER GLOVE INDEX STATS')
         else:
-            st.info(f"No goalkeeping roster profiles mapped inside {selected_squad} registries.")
+            st.info(f"Awaiting positional classification matrix mapping metrics for Goalkeepers in {selected_country}.")
