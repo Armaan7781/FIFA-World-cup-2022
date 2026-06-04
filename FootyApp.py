@@ -6,12 +6,12 @@ import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 from mplsoccer import Pitch
 
-# --- 1. GLASSMORPHIC DESIGN LAYER WITH COMPONENT FIXES ---
+# --- 1. DRIBBBLE UI LAYOUT OVERRIDES & CSS INJECTION ---
 st.set_page_config(page_title="Qatar 2022 - Elite Analytics Hub", layout="wide")
 
 st.markdown("""
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@700&display=swap');
 
         /* Theme Baseline */
         .stApp {
@@ -20,39 +20,49 @@ st.markdown("""
             font-family: 'Inter', sans-serif !important;
         }
         
-        /* Sidebar Menu Layout Override */
+        /* Premium Left Panel Navigation (Dribbble Layout Architecture) */
         section[data-testid="stSidebar"] {
-            background-color: #05060A !important;
-            border-right: 1px solid #1A1C28 !important;
-        }
-        div[data-testid="stSidebarUserContent"] .stRadio > div {
-            gap: 12px;
-        }
-        div[data-testid="stSidebarUserContent"] .stRadio label {
-            background: #10121D;
-            border: 1px solid #1E2235;
-            padding: 14px 20px;
-            border-radius: 12px;
-            color: #94A3B8 !important;
-            font-weight: 600;
-            transition: all 0.2s;
-            width: 100%;
-        }
-        div[data-testid="stSidebarUserContent"] .stRadio div[aria-checked="true"] label {
-            background: linear-gradient(90deg, #161D33 0%, #10121D 100%) !important;
-            border-left: 4px solid #38BDF8 !important;
-            color: #38BDF8 !important;
+            background-color: #06070B !important;
+            border-right: 1px solid #141622 !important;
         }
         
-        /* Modern Pill Navigation Tabs */
+        /* Total Remodeling of Radio Buttons to look like Interactive Menu Tabs */
+        div[data-testid="stSidebarUserContent"] .stRadio > div {
+            gap: 10px;
+        }
+        div[data-testid="stSidebarUserContent"] .stRadio label {
+            background: #0F111A;
+            border: 1px solid #1A1D2C;
+            padding: 16px 22px;
+            border-radius: 14px;
+            color: #64748B !important;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            width: 100%;
+            display: block;
+            cursor: pointer;
+        }
+        /* Hides the default radio bullet circle completely */
+        div[data-testid="stSidebarUserContent"] .stRadio [data-testid="stWidgetLabel"] + div div div {
+            display: none !important;
+        }
+        div[data-testid="stSidebarUserContent"] .stRadio div[aria-checked="true"] label {
+            background: linear-gradient(90deg, #161D33 0%, #0F111A 100%) !important;
+            border-left: 4px solid #38BDF8 !important;
+            border-color: #1E253A;
+            color: #38BDF8 !important;
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.05);
+        }
+        
+        /* Modern Pill Tabs Navigation */
         .stTabs [data-baseweb="tab"] {
             color: #64748B !important;
             font-family: 'Space Grotesk', sans-serif;
             font-weight: 700;
-            font-size: 14px;
-            padding: 12px 28px;
+            font-size: 13px;
+            padding: 12px 26px;
             background: #0F111A;
-            border: 1px solid #1E2235;
+            border: 1px solid #1A1D2C;
             border-radius: 30px;
             margin-right: 12px;
         }
@@ -63,20 +73,31 @@ st.markdown("""
             box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
         }
         
-        /* Pitch Map Wrappers */
+        /* Premium Gradient Vector Header Canvas (Guaranteed to Load Instantly) */
+        .premium-hero-header {
+            width: 100%;
+            padding: 40px;
+            background: linear-gradient(135deg, #1E1B4B 0%, #0F111A 100%);
+            border: 1px solid #2E2A75;
+            border-radius: 20px;
+            margin-bottom: 35px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Spatial Canvas Box Wrappers */
         .pitch-container {
             background: linear-gradient(145deg, #11131F 0%, #0B0C14 100%);
             border: 1px solid #1E2235;
             border-radius: 20px;
             padding: 30px;
-            margin-top: 20px;
+            margin-top: 25px;
             margin-bottom: 45px;
         }
         
-        /* UI Monogram Profile Block */
+        /* Glassmorphic Profile Card */
         .player-profile-card {
-            background: linear-gradient(135deg, #16152B 0%, #0C0D14 100%);
-            border: 2px solid #232144;
+            background: linear-gradient(135deg, #131224 0%, #0C0D14 100%);
+            border: 1px solid #201E3D;
             border-radius: 24px;
             padding: 25px;
             display: flex;
@@ -86,8 +107,8 @@ st.markdown("""
             position: relative;
         }
         .avatar-monogram {
-            width: 75px;
-            height: 75px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             background: #38BDF8;
             color: #090A0F;
@@ -95,38 +116,25 @@ st.markdown("""
             align-items: center;
             justify-content: center;
             font-family: 'Space Grotesk', sans-serif;
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 700;
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
         }
         .player-rating {
             position: absolute;
             right: 35px;
             font-family: 'Space Grotesk', sans-serif;
-            font-size: 38px;
+            font-size: 36px;
             font-weight: 800;
             color: #F43F5E;
-        }
-        
-        /* Banner Constraints */
-        .hero-banner {
-            width: 100%;
-            height: 240px;
-            object-fit: cover;
-            border-radius: 20px;
-            margin-bottom: 35px;
-            border: 1px solid #1E2235;
         }
     </style>
 """, unsafe_allow_html=True)
 
-BANNER_URL = "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80"
-
-# --- 2. ADVANCED SELF-HEALING DATA ENGINE ---
+# --- 2. COMPILED DATA REGISTRY MATRIX ENGINE ---
 @st.cache_data
 def load_all_comprehensive_matrices():
     def auto_patch_missing_columns(df, scope="team"):
-        # Explicit definitions of all 40+ stats to keep old CSV matrices functional
         defaults = {
             'Goals': [15, 16, 8, 6, 8, 13, 9, 10], 'Assists': [11, 12, 5, 4, 6, 10, 7, 8],
             'Shots': [94, 91, 68, 52, 85, 74, 61, 55], 'Shots_OT': [41, 38, 24, 17, 34, 29, 21, 19],
@@ -173,7 +181,6 @@ def load_all_comprehensive_matrices():
         
         t_sum = auto_patch_missing_columns(t_sum, "team")
         p_sum = auto_patch_missing_columns(p_sum, "player")
-        
     except FileNotFoundError:
         teams_list = ['Argentina', 'France', 'Croatia', 'Morocco', 'Brazil', 'England', 'Spain', 'Netherlands']
         t_sum = pd.DataFrame({'team': teams_list})
@@ -191,39 +198,58 @@ def load_all_comprehensive_matrices():
     t_sum['Passing_Acc'] = ((t_sum['Succ_Passes'] / t_sum['Passes']) * 100).round(2)
     p_sum['Passing_Acc'] = ((p_sum['Succ_Passes'] / p_sum['Passes']) * 100).round(2)
     
-    t_sum['xG'] = t_sum['xG'].round(2)
-    p_sum['xG'] = p_sum['xG'].round(2)
-    
     return t_sum, p_sum, s_pos, s_sht, s_pas
 
 t_df, p_df, s_pos, s_shots, s_passes = load_all_comprehensive_matrices()
 
-# --- 3. WIDE-FORMAT CHART RENDER ENGINE ---
-def render_wide_metric_chart(df, x_col, y_col, chart_title, bar_color, decimal_format=False):
+# --- 3. CREATIVE HIGH-FIDELITY CHART ENGINES ---
+def render_gradient_bar_chart(df, x_col, y_col, title, colorscale_theme='viridis', decimal_format=False):
+    # FIX: Cleaned and unified lowercase colorscale keyword maps to resolve core value errors
     sorted_df = df[df[y_col] != 0].sort_values(by=y_col, ascending=False).head(10)
     if sorted_df.empty:
         return
         
     text_template = '%{text:.2f}' if decimal_format else '%{text}'
     
-    fig = px.bar(sorted_df, x=x_col, y=y_col, title=chart_title, text=y_col)
-    fig.update_traces(
-        marker=dict(color=bar_color, line=dict(color='#FFFFFF', width=0.5)),
-        texttemplate=text_template,
-        textposition='outside',
-        cliponaxis=False
+    fig = px.bar(
+        sorted_df, x=x_col, y=y_col, title=title, text=y_col,
+        color=y_col, color_continuous_scale=colorscale_theme
     )
+    fig.update_traces(texttemplate=text_template, textposition='outside', cliponaxis=False)
     fig.update_layout(
-        template="plotly_dark",
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)',
-        height=380,
-        margin=dict(l=10, r=10, t=50, b=10),
+        template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+        height=380, margin=dict(l=10, r=10, t=50, b=10),
         xaxis=dict(title="", showgrid=False, type='category', tickangle=-15),
         yaxis=dict(title="", showgrid=True, gridcolor="#161924", zeroline=False),
-        font=dict(family="Inter", size=12, color="#94A3B8")
+        font=dict(family="Inter", size=11, color="#94A3B8"),
+        coloraxis_showscale=False
     )
-    # Streamlit update layout compliance for stretch width
+    st.plotly_chart(fig, width='stretch')
+
+def render_distribution_donut_chart(df, label_col, value_col, title):
+    sorted_df = df.sort_values(by=value_col, ascending=False).head(5)
+    if sorted_df.empty:
+        return
+        
+    fig = px.pie(sorted_df, names=label_col, values=value_col, title=title, hole=0.45)
+    fig.update_traces(textinfo='percent+label', marker=dict(line=dict(color='#090A0F', width=2)))
+    fig.update_layout(
+        template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+        height=380, margin=dict(l=10, r=10, t=50, b=10),
+        font=dict(family="Inter", size=11, color="#94A3B8")
+    )
+    st.plotly_chart(fig, width='stretch')
+
+def render_performance_scatter_trend(df, x_col, y_col, label_col, title, decimal_format=False):
+    fig = px.scatter(df, x=x_col, y=y_col, text=label_col, size=x_col, title=title, trendline="ols")
+    fig.update_traces(textposition='top center', marker=dict(color='#38BDF8', size=10, line=dict(width=1, color='#FFFFFF')))
+    fig.update_layout(
+        template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+        height=380, margin=dict(l=10, r=10, t=50, b=10),
+        xaxis=dict(showgrid=True, gridcolor="#161924"),
+        yaxis=dict(showgrid=True, gridcolor="#161924"),
+        font=dict(family="Inter", size=11, color="#94A3B8")
+    )
     st.plotly_chart(fig, width='stretch')
 
 def render_density_pitch_canvas(spatial_df, search_name, filter_key, headline_text, cmap_theme='plasma'):
@@ -235,9 +261,9 @@ def render_density_pitch_canvas(spatial_df, search_name, filter_key, headline_te
     if len(filtered) > 2:
         pitch.kdeplot(filtered['x'], filtered['y'], ax=ax, cmap=cmap_theme, fill=True, shade_lowest=False, alpha=0.5, n_levels=10)
     else:
-        ax.text(60, 40, f"Spatial distribution frames trace for {search_name} rendering dynamically", color='#475569', ha='center', va='center', fontname='Inter', fontsize=12)
+        ax.text(60, 40, f"Spatial distribution tracking frames for {search_name}", color='#475569', ha='center', va='center', fontname='Inter', fontsize=12)
         
-    plt.title(headline_text, color='#FFFFFF', fontsize=14, weight='bold', pad=12)
+    plt.title(headline_text, color='#FFFFFF', fontsize=13, weight='bold', pad=12, fontname='Inter')
     st.pyplot(fig, clear_figure=True)
 
 def render_passing_network_map(team_or_player_name, is_player=False):
@@ -263,75 +289,65 @@ def render_passing_network_map(team_or_player_name, is_player=False):
     plt.title(title, color='#FFFFFF', fontsize=14, weight='bold', pad=12)
     st.pyplot(fig, clear_figure=True)
 
-# --- 4. NAVIGATION ARCHITECTURE CONFIGURATION ---
+# --- 4. CONFIGURATION INTERACTION ROUTER ---
 st.sidebar.markdown("<h3 style='color:#FFFFFF; font-family: Space Grotesk; letter-spacing:1px; margin-bottom:15px;'>ANALYSIS SCOPE</h3>", unsafe_allow_html=True)
 view_selector = st.sidebar.radio("SCOPE_MODE", ["Squad Level Metrics", "Individual Athlete Profiles"], label_visibility="collapsed")
 
-st.markdown(f'<img src="{BANNER_URL}" class="hero-banner" alt="Qatar Stadium Canvas">', unsafe_allow_html=True)
+# Native Vector Canvas Header (Completely unblocked by hotlink firewalls)
+st.markdown("""
+    <div class="premium-hero-header">
+        <div>
+            <h1 style='font-family: Space Grotesk; font-size:32px; font-weight:800; color:#FFFFFF; margin:0;'>QATAR 2022 CORE PERFORMANCES</h1>
+            <p style='color:#38BDF8; font-weight:600; margin:5px 0 0 0; font-size:14px;'>StatsBomb Premium Tournament Performance Index</p>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
 
-# --- PANEL FLOW A: SQUAD DATA VIEW ---
+# --- PANEL FLOW A: SQUAD LEVEL ANALYTICS ---
 if view_selector == "Squad Level Metrics":
     selected_squad = st.sidebar.selectbox("SELECT NATIONAL SQUAD", sorted(t_df['team'].unique()))
+    
+    # Drill Down Fix: Isolate individual players inside the squad
+    squad_players = p_df[p_df['team'] == selected_squad]
     
     tab_atk, tab_mid, tab_def, tab_gk = st.tabs(["🎯 ATTACK PHASES", "👟 MIDFIELD ENGINE", "🛡️ DEFENSE SYSTEM", "🧤 GOALKEEPING PROFILE"])
     
     with tab_atk:
-        render_wide_metric_chart(t_df, 'team', 'Goals', 'SQUAD TOTAL GOALS RECORDED', '#F43F5E')
-        render_wide_metric_chart(t_df, 'team', 'Assists', 'SQUAD TOTAL ASSISTS OUTPUT', '#FB7185')
-        render_wide_metric_chart(t_df, 'team', 'Shots', 'TOTAL TEAM SHOT GENERATION VOLUME', '#FDA4AF')
-        render_wide_metric_chart(t_df, 'team', 'Shots_OT', 'TOTAL SHOTS ON TARGET RECORDED', '#FFF1F2')
-        render_wide_metric_chart(t_df, 'team', 'xG', 'EXPECTED GOALS (xG) VOLUME PRODUCTION', '#E11D48', decimal_format=True)
-        render_wide_metric_chart(t_df, 'team', 'xG_vs_Goals', 'GOALS MINUS EXPECTED GOALS CONVERSION RATIO', '#BE123C', decimal_format=True)
-        render_wide_metric_chart(t_df, 'team', 'Pressures', 'OUT-OF-POSSESSION SYSTEM PRESSURES APPLIED', '#991B1B')
-        render_wide_metric_chart(t_df, 'team', 'Recoveries', 'POSSESSION REGAINS (BALL RECOVERIES)', '#9F1239')
+        render_gradient_bar_chart(squad_players, 'player', 'Goals', f'{selected_squad.upper()} - SQUAD FINISHING LEADERS (GOALS)', 'reds')
+        render_gradient_bar_chart(squad_players, 'player', 'Assists', f'{selected_squad.upper()} - SQUAD CHANCES CONVERTED (ASSISTS)', 'peach')
+        render_distribution_donut_chart(squad_players, 'player', 'Shots', f'{selected_squad.upper()} - STRATEGIC SHOT CONTRIBUTIONS')
+        render_performance_scatter_trend(squad_players, 'xG', 'Goals', 'player', f'{selected_squad.upper()} - FINISHING EFFICIENCY CURVE (xG VS GOALS)', decimal_format=True)
+        render_gradient_bar_chart(squad_players, 'player', 'Pressures', 'ATTACKING LINE HIGH PRESSURES APPLIED', 'ylorrd')
         
         st.markdown('<div class="pitch-container">', unsafe_allow_html=True)
-        render_density_pitch_canvas(s_shots, selected_squad, 'team', f"{selected_squad.upper()} - SQUAD AVERAGE SHOT DENSITY MAP", 'flare')
-        st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown('<div class="pitch-container">', unsafe_allow_html=True)
-        render_density_pitch_canvas(s_pos, selected_squad, 'team', f"{selected_squad.upper()} - SQUAD POSITIONING MATRIX DENSITY", 'mako')
+        render_density_pitch_canvas(s_shots, selected_squad, 'team', f"{selected_squad.upper()} - SQUAD AVERAGE SHOT DISTRIBUTION DENSITY", 'flare')
         st.markdown('</div>', unsafe_allow_html=True)
 
     with tab_mid:
-        render_wide_metric_chart(t_df, 'team', 'Passes', 'TOTAL DISTRIBUTION PASSES ATTEMPTED', '#6366F1')
-        render_wide_metric_chart(t_df, 'team', 'Succ_Passes', 'TOTAL SUCCESSFUL PASSES COMPLETED', '#4F46E5')
-        render_wide_metric_chart(t_df, 'team', 'Prog_Passes', 'LINE-BREAKING PROGRESSIVE DISTRIBUTION VOLUME', '#4338CA')
-        render_wide_metric_chart(t_df, 'team', 'Crosses', 'FLANK CROSS DELIVERIES COMPLETED', '#818CF8')
-        render_wide_metric_chart(t_df, 'team', 'Through_Balls', 'CREATIVE STRATEGIC THROUGH BALL INTENTS', '#A5B4FC')
-        render_wide_metric_chart(t_df, 'team', 'Long_Balls', 'SWITCHING PLAY DISTRIBUTION (LONG BALLS)', '#312E81')
-        render_wide_metric_chart(t_df, 'team', 'Passing_Acc', 'OVERALL SQUAD PASS ACCURACY RATING (%)', '#C7D2FE', decimal_format=True)
-        render_wide_metric_chart(t_df, 'team', 'Prog_Passing_Acc', 'PROGRESSIVE DISTRIBUTION EFFICIENCY (%)', '#4338CA', decimal_format=True)
-        render_wide_metric_chart(t_df, 'team', 'Touches', 'TOTAL FIELD PLAY BALL TOUCHES VOLUME', '#363377')
-        render_wide_metric_chart(t_df, 'team', 'Recoveries', 'MIDFIELD ZONE BALL RECOVERIES', '#9F1239')
-        render_wide_metric_chart(t_df, 'team', 'Second_Ball_Won', 'LOOSE BALLS SECURED (SECOND BALLS WON)', '#4F46E5')
+        render_gradient_bar_chart(squad_players, 'player', 'Passes', 'ATTEMPTED DISTRIBUTIONS VOLUME BY PLAYER', 'purples')
+        render_gradient_bar_chart(squad_players, 'player', 'Succ_Passes', 'COMPLETED DISTRIBUTION SEGMENTS', 'blues')
+        render_gradient_bar_chart(squad_players, 'player', 'Prog_Passes', 'LINE-BREAKING PROGRESSIVE DISTRIBUTION DRIVERS', 'cividis')
+        render_distribution_donut_chart(squad_players, 'player', 'Through_Balls', 'KEY THROUGH-BALL RATIOS')
+        render_gradient_bar_chart(squad_players, 'player', 'Touches', 'FIELD PLAY POSSESSION TOUCHES DENSITY', 'inferno')
+        render_gradient_bar_chart(squad_players, 'player', 'Second_Ball_Won', 'LOOSE BALL RECOVERIES (SECOND BALLS WON)', 'magma')
         
         st.markdown('<div class="pitch-container">', unsafe_allow_html=True)
         render_passing_network_map(selected_squad, is_player=False)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with tab_def:
-        render_wide_metric_chart(t_df, 'team', 'Blocks', 'SHOT & DISTRIBUTION PATH BLOCKS', '#10B981')
-        render_wide_metric_chart(t_df, 'team', 'Passes', 'DEFENSIVE LINE DISTRIBUTIONS COMPLETED', '#6366F1')
-        render_wide_metric_chart(t_df, 'team', 'Tackles', 'SUCCESSFUL GROUND DEFENSIVE TACKLES', '#059669')
-        render_wide_metric_chart(t_df, 'team', 'Prog_Passes', 'OUT-OF-DEFENSE PROGRESSIVE PASSES', '#4338CA')
-        render_wide_metric_chart(t_df, 'team', 'Aerials_Won', 'AERIAL DUELS SUPREMACY MATRIX', '#047857')
-        render_wide_metric_chart(t_df, 'team', 'Duels_Won', 'TOTAL CONTESTED DUELS SECURED', '#065F46')
-        render_wide_metric_chart(t_df, 'team', 'Ground_Duels_Won', 'GROUND DUELS CHALLENGES SECURED', '#0F766E')
-        render_wide_metric_chart(t_df, 'team', 'Interceptions', 'TACTICAL INTERCEPTIONS COMPLETED', '#115E59')
-        render_wide_metric_chart(t_df, 'team', 'Recoveries', 'DEFENSIVE LINE CONTEXT BALL RECOVERIES', '#9F1239')
-        render_wide_metric_chart(t_df, 'team', 'Errors', 'DEFENSIVE SYSTEM ACCIDENTAL ERRORS', '#EF4444')
-        render_wide_metric_chart(t_df, 'team', 'Errors_Goal', 'CRITICAL DESTRUCTIVE ERRORS LEADING TO GOAL', '#B91C1C')
+        render_gradient_bar_chart(squad_players, 'player', 'Blocks', 'DEFENSIVE LINE POSITION BLOCKS EXECUTED', 'greens')
+        render_gradient_bar_chart(squad_players, 'player', 'Tackles', 'SUCCESSFUL GROUND DEFENSIVE TACKLES', 'tealgrn')
+        render_gradient_bar_chart(squad_players, 'player', 'Aerials_Won', 'AERIAL BALL DUELS WON SUPREMACY', 'viridis')
+        render_distribution_donut_chart(squad_players, 'player', 'Interceptions', 'TACTICAL PASS INTERCEPTIONS SEVERED')
+        render_gradient_bar_chart(squad_players, 'player', 'Errors', 'DEFENSIVE LINE UNFORCED ERRORS', 'orrd')
 
     with tab_gk:
-        render_wide_metric_chart(t_df, 'team', 'Saves', 'GOAL-LINE CONVERSIONS PREVENTED (SAVES)', '#F59E0B')
-        render_wide_metric_chart(t_df, 'team', 'Passes', 'GOALKEEPER BUILD-UP PASSES ATTEMPTED', '#6366F1')
-        render_wide_metric_chart(t_df, 'team', 'Long_Passes_Succ', 'SUCCESSFUL LONG BALL DISTRIBUTION COMPLETED', '#D97706')
-        render_wide_metric_chart(t_df, 'team', 'Pen_Saves', 'CRITICAL PENALTY STOPPING SAVES', '#B45309')
-        render_wide_metric_chart(t_df, 'team', 'Tackles', 'GOALKEEPER OUT-OF-BOX SWEEPER TACKLES', '#059669')
-        render_wide_metric_chart(t_df, 'team', 'Punches', 'BOX DOMINANCE CLEARANCES (PUNCHES)', '#9A3412')
-        render_wide_metric_chart(t_df, 'team', 'Errors', 'GOALKEEPER SYSTEM TRACKING ERRORS MADE', '#EF4444')
+        # Keep team views intact for goalkeeping rosters
+        render_gradient_bar_chart(t_df, 'team', 'Saves', 'GOAL-LINE SAVES INDEX LEADERS', 'sunset')
+        render_gradient_bar_chart(t_df, 'team', 'Long_Passes_Succ', 'GOALKEEPER SUCCESSFUL EXPANSIVE LONG BALLS', 'ylgnbu')
 
-# --- PANEL FLOW B: INDIVIDUAL ATHLETE PROFILE VIEW ---
+# --- PANEL FLOW B: INDIVIDUAL ATHLETE PERFORMANCE ---
 else:
     squad_filter = st.sidebar.selectbox("FILTER ALIGNMENT BY SQUAD", sorted(p_df['team'].unique()))
     team_players = p_df[p_df['team'] == squad_filter]
@@ -344,8 +360,8 @@ else:
         <div class="player-profile-card">
             <div class="avatar-monogram">{initials}</div>
             <div>
-                <div style="font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight:700; color:#FFFFFF;">{selected_player}</div>
-                <div style="color: #64748B; font-size: 14px; font-weight:600; text-transform: uppercase; letter-spacing:1px;">{p_data['team']} • PRO TOURNAMENT SQUAD PROFILE</div>
+                <div style="font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight:700; color:#FFFFFF; margin:0;">{selected_player}</div>
+                <div style="color: #64748B; font-size: 13px; font-weight:600; text-transform: uppercase; letter-spacing:1px; margin-top:2px;">{p_data['team']} • TOURNAMENT DATA MATRIX OVERVIEW</div>
             </div>
             <div class="player-rating">94</div>
         </div>
@@ -354,60 +370,29 @@ else:
     tab_atk, tab_mid, tab_def, tab_gk = st.tabs(["🎯 ATTACK PHASES", "👟 MIDFIELD ENGINE", "🛡️ DEFENSE SYSTEM", "🧤 GOALKEEPING PROFILE"])
     
     with tab_atk:
-        render_wide_metric_chart(p_df, 'player', 'Goals', 'INDIVIDUAL TOURNAMENT FINISHING GOALS', '#F43F5E', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Assists', 'INDIVIDUAL TOTAL ASSISTS DELIVERED', '#FB7185', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Shots', 'TOTAL INDIVIDUAL SHOT PRODUCTION VOLUME', '#FDA4AF', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Shots_OT', 'INDIVIDUAL SHOTS ON TARGET CONVERSIONS', '#FFF1F2', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'xG', 'EXPECTED GOALS (xG) PERFORMANCE PROFILES', '#E11D48', is_player=True, decimal_format=True)
-        render_wide_metric_chart(p_df, 'player', 'xG_vs_Goals', 'INDIVIDUAL FINISHING EFFICIENCY SCORE', '#BE123C', is_player=True, decimal_format=True)
-        render_wide_metric_chart(p_df, 'player', 'Pressures', 'INDIVIDUAL DEFENSIVE PRESSURES EXECUTED', '#991B1B', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Recoveries', 'INDIVIDUAL POSSESSION BALL RECOVERIES', '#9F1239', is_player=True)
+        render_gradient_bar_chart(p_df, 'player', 'Goals', 'INDIVIDUAL GOALS LEADERBOARD', 'reds')
+        render_gradient_bar_chart(p_df, 'player', 'Assists', 'INDIVIDUAL ASSISTS LEADERBOARD', 'peach')
+        render_gradient_bar_chart(p_df, 'player', 'xG', 'EXPECTED GOALS (xG) LEADERBOARD', 'pinkyl', decimal_format=True)
+        render_gradient_bar_chart(p_df, 'player', 'xG_vs_Goals', 'GOALS MINUS EXPECTED GOALS RATIO', 'teal', decimal_format=True)
         
         st.markdown('<div class="pitch-container">', unsafe_allow_html=True)
-        render_density_pitch_canvas(s_shots, selected_player, 'player', f"{selected_player.upper()} - SHOT EXECUTIONBLUEPRINT ZONE MAP", 'plasma')
-        st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown('<div class="pitch-container">', unsafe_allow_html=True)
-        render_density_pitch_canvas(s_pos, selected_player, 'player', f"{selected_player.upper()} - INDIVIDUAL POSITIONING DENSITY FIELD MAP", 'magma')
+        render_density_pitch_canvas(s_shots, selected_player, 'player', f"{selected_player.upper()} - INDIVIDUAL SHOT EXECUTIONBLUEPRINT MAP", 'plasma')
         st.markdown('</div>', unsafe_allow_html=True)
 
     with tab_mid:
-        render_wide_metric_chart(p_df, 'player', 'Passes', 'TOTAL DISTRIBUTION PASSES ATTEMPTED', '#6366F1', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Succ_Passes', 'TOTAL SUCCESSFUL PASSES COMPLETED', '#4F46E5', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Prog_Passes', 'LINE-BREAKING PROGRESSIVE PASSES DISTRIBUTED', '#4338CA', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Crosses', 'FLANK DELIVERY CROSSES EXECUTED', '#818CF8', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Through_Balls', 'STRATEGIC KEY THROUGH BALLS LOGGED', '#A5B4FC', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Long_Balls', 'INDIVIDUAL EXPANSIVE LONG BALL DISTRIBUTIONS', '#312E81', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Passing_Acc', 'INDIVIDUAL PASS COMPLETION EFFICIENCY (%)', '#C7D2FE', is_player=True, decimal_format=True)
-        render_wide_metric_chart(p_df, 'player', 'Prog_Passing_Acc', 'INDIVIDUAL PROGRESSIVE PASS EFFICIENCY (%)', '#4338CA', is_player=True, decimal_format=True)
-        render_wide_metric_chart(p_df, 'player', 'Touches', 'TOTAL FIELD POSSESSION BALL TOUCHES', '#363377', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Recoveries', 'MIDFIELD ZONE CONTEXT BALL RECOVERIES', '#9F1239', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Second_Ball_Won', 'LOOSE 50-50 CHALLENGE SECOND BALLS WON', '#4F46E5', is_player=True)
+        render_gradient_bar_chart(p_df, 'player', 'Prog_Passes', 'LINE-BREAKING PROGRESSIVE DISTRIBUTION RECORDS', 'cividis')
+        render_gradient_bar_chart(p_df, 'player', 'Passing_Acc', 'PASS COMPLETION EFFICIENCY OVERVIEW (%)', 'plasma', decimal_format=True)
         
         st.markdown('<div class="pitch-container">', unsafe_allow_html=True)
-        render_passing_network_map(selected_player, is_player=True)
+        render_density_pitch_canvas(s_pos, selected_player, 'player', f"{selected_player.upper()} - POSITIONING WEIGHT INTEGRATION HEATMAP", 'magma')
         st.markdown('</div>', unsafe_allow_html=True)
 
     with tab_def:
-        render_wide_metric_chart(p_df, 'player', 'Blocks', 'TACTICAL SHOT & DISTRIBUTIONS BLOCKED', '#10B981', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Passes', 'DEFENSIVE LINE BASE PASSES COMPLETED', '#6366F1', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Tackles', 'INDIVIDUAL SUCCESSFUL GROUND TACKLES', '#059669', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Prog_Passes', 'OUT-OF-DEFENSE PROGRESSIVE PASS DISTRIBUTIONS', '#4338CA', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Aerials_Won', 'INDIVIDUAL AERIAL CONTESTED DUELS WON', '#047857', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Duels_Won', 'TOTAL INDIVIDUAL MATRICES DUELS WON', '#065F46', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Ground_Duels_Won', 'INDIVIDUAL GROUND DUELS CONTESTS SECURED', '#0F766E', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Interceptions', 'TACTICAL DANGER INTERCEPTIONS SEVERED', '#115E59', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Recoveries', 'DEFENSIVE ZONE CONTEXT BALL RECOVERIES', '#9F1239', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Errors', 'INDIVIDUAL POSITIONING UNFORCED ERRORS', '#EF4444', is_player=True)
-        render_wide_metric_chart(p_df, 'player', 'Errors_Goal', 'CRITICAL FAILURE INACCURACIES LEADING TO GOAL', '#B91C1C', is_player=True)
+        render_gradient_bar_chart(p_df, 'player', 'Tackles', 'INDIVIDUAL SUCCESSFUL GROUND TACKLES', 'greens')
+        render_gradient_bar_chart(p_df, 'player', 'Interceptions', 'TACTICAL PASS INTERCEPTIONS LOGGED', 'viridis')
 
     with tab_gk:
-        if p_data['Saves'] > 0 or p_data['Punches'] > 0:
-            render_wide_metric_chart(p_df, 'player', 'Saves', 'GOALKEEPER SHOT-STOPPING SAVES', '#F59E0B', is_player=True)
-            render_wide_metric_chart(p_df, 'player', 'Passes', 'GOALKEEPER BUILD-UP PASSES COMPLETED', '#6366F1', is_player=True)
-            render_wide_metric_chart(p_df, 'player', 'Long_Passes_Succ', 'SUCCESSFUL GOALKEEPER LONG BALL COMPLETIONS', '#D97706', is_player=True)
-            render_wide_metric_chart(p_df, 'player', 'Pen_Saves', 'CLUTCH PENALTY SAVES LOGGED', '#B45309', is_player=True)
-            render_wide_metric_chart(p_df, 'player', 'Tackles', 'GOALKEEPER OUT-OF-BOX SWEEPER INTERVENTIONS', '#059669', is_player=True)
-            render_wide_metric_chart(p_df, 'player', 'Punches', 'BOX DOMINANCE CLEARANCES (PUNCHES)', '#9A3412', is_player=True)
-            render_wide_metric_chart(p_df, 'player', 'Errors', 'GOALKEEPER UNFORCED HANDLING ERRORS', '#EF4444', is_player=True)
+        if p_data['Saves'] > 0:
+            render_gradient_bar_chart(p_df, 'player', 'Saves', 'GOALKEEPER SHOT-STOPPING RECORDS', 'sunset')
         else:
             st.info("The selected player contains no active goalkeeping records inside the data registry frame.")
