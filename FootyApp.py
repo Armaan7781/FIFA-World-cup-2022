@@ -389,4 +389,4 @@ else:
             p_data, p_df, 
             ['Blocks', 'Tackles', 'Aerials_Won', 'Duels_Won', 'Ground_Duels_Won', 'Interceptions', 'Errors'], 
             f'{selected_player} vs. {selected_country} Average Defending Benchmark'
-        )streamlit run "e:/Python Codes/FootyApp.py"
+        )
